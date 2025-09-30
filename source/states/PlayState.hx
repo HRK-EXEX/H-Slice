@@ -1887,6 +1887,9 @@ class PlayState extends MusicBeatState
 						density: 1
 					};
 					
+					if (Std.isOfType(songNotes[3], String))
+						swagNote.noteType = songNotes[3];
+					
 					function extractSpamData(note:Array<Dynamic>):Array<Float> {
 						for (slot in [3, 4]) {
 							var field = note[slot];
@@ -2953,6 +2956,8 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 							bulkSkipCount = Math.min(bulkSkipCount, spam.remaining);
 						}
 						if (bulkSkipCount > 0) {
+							spam.seedNote.strumTime += bulkSkipCount * noteInterval;
+							spam.remaining -= bulkSkipCount;
 							// Update skip counters
 							if (castMust) skipBf += bulkSkipCount;
 							else skipOp += bulkSkipCount;
@@ -4295,7 +4300,7 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 			transitioning = true;
 		}
 		
-		unspawnNotes = []; spamNotes = [];
+		unspawnNotes = [];
 		return true;
 	}
 
@@ -5320,6 +5325,7 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 
 		if (leavePlayState) SONG = null;
 		notes.clear();
+		spamNotes = [];
 		
 		#if desktop
 		if (ffmpegMode) {

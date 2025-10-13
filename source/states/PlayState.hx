@@ -2949,10 +2949,10 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 					if ((!canBeHit || !optimizeSpawnNote) && isCanPass) spawn(spam.seedNote);
 					else {
 						var bulkSkipCount:Float = 0;
-						var noteInterval = (15000 / spawnBPM) / spam.density;
+						var noteInterval:Float = (15000 / spawnBPM) / spam.density;
 						if (spam.seedNote.strumTime < fixedPosition) {
 							// Only skip notes that are fully in the past
-							bulkSkipCount = Math.floor((fixedPosition - spam.seedNote.strumTime) / noteInterval) - 1;
+							bulkSkipCount = Math.ffloor((fixedPosition - spam.seedNote.strumTime) / noteInterval) - 1;
 							bulkSkipCount = Math.min(bulkSkipCount, spam.remaining);
 						}
 						if (bulkSkipCount > 0) {

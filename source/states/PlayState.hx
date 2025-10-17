@@ -2621,7 +2621,7 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 			if (columnIndex < 0) columnIndex = FlxMath.maxInt(0, columns-1);
 
 			if (debugInfos) {
-				ppopUpDebug.fill(0); popUpAlive = 0;
+				popUpDebug.fill(0); popUpAlive = 0;
 				if (showPopups) {
 					popUpGroup.forEach(lmfao -> {
 						switch (lmfao.type) {
@@ -3562,8 +3562,6 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 		DiscordClient.resetClientID();
 		#end
 
-		if (controls.justPressed('mobileC') || FlxG.keys.pressed.CONTROL) 
-			ChartingState.youShallNotPass = false;
 		MusicBeatState.switchState(new ChartingState(!chartingMode));
 		chartingMode = true;
 	}

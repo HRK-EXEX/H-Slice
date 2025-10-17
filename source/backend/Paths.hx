@@ -8,6 +8,7 @@ import mikolka.vslice.freeplay.FreeplayState as NewFreeplayState;
 import cpp.vm.Gc;
 import objects.NoteSplash.NoteSplashConfig;
 import flixel.graphics.frames.FlxFramesCollection;
+import flixel.util.FlxArrayUtil;
 import haxe.io.Path;
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -40,12 +41,16 @@ class Paths
 
 	public static var defaultNoteStuff:Array<Dynamic> = [];
 
-	public static final defaultPath:String = 'noteSkins/NOTE_assets';
 	public static var defaultSkin:String = 'noteSkins/NOTE_assets';
 	public static var defaultNoteSprite:FlxSprite;
 
 	public static var noteSkinFramesMap:Map<String, FlxFramesCollection> = new Map();
 	public static var noteSkinAnimsMap:Map<String, FlxAnimationController> = new Map();
+
+	public static var alphabetFramesMap:Map<String, FlxFramesCollection> = new Map();
+	public static var alphabetAnimsMap:Map<String, FlxAnimationController> = new Map();
+	public static var songIconFramesMap:Map<String, FlxFramesCollection> = new Map();
+	public static var songIconAnimsMap:Map<String, FlxAnimationController> = new Map();
 
 	public static var popUpFramesMap:Map<String, FlxFramesCollection> = new Map();
 
@@ -57,13 +62,17 @@ class Paths
 			dumpExclusions.push(key);
 	}
 
-	public static var dumpExclusions:Array<String> = ['assets/shared/music/freakyMenu.$SOUND_EXT',"assets/shared/images/cursor-default.png", 'assets/shared/mobile/touchpad/bg.png'];
+	//TODO make this more customisable
+	public static var dumpExclusions:Array<String> = [
+		'music/freakyMenu.$SOUND_EXT'
+	];
 	// haya I love you for the base cache dump I took to the max
 	public static function clearUnusedMemory()
 	{
 		// clear non local assets in the tracked assets list
 		for (key in currentTrackedAssets.keys())
 		{
+			//trace(key);
 			// if it is not currently contained within the used local assets
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key))
 			{
@@ -78,7 +87,16 @@ class Paths
 			MemoryUtil.collect(true);
 			// trace('${Std.string(FlxG.state)}');
 			if ((cast FlxG.state) is PlayState) MemoryUtil.disable();
-		} else System.gc();
+		} else {
+			// trace("-- Cache dump start --");
+			// @:privateAccess
+			// for(x in FlxG.bitmap._cache.keys()) trace(x);
+			// // run the garbage collector for good measure lmfao
+			// trace("-- END --");
+
+			System.gc();
+		}
+		
 		#if cpp
 		cpp.NativeGc.run(true);
 		#end
@@ -107,6 +125,7 @@ class Paths
 				currentTrackedSounds.remove(key);
 			}
 		}
+
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
 		#if !html5 openfl.Assets.cache.clear("songs"); #end
@@ -307,13 +326,25 @@ class Paths
 	{
 		if (bitmap == null)
 		{
-			var file:String = getPath(key, IMAGE, parentFolder, true);
-			bitmap = NativeFileSystem.getBitmap(file);
+			// A ton of stuff uses .png internally, so we fake it for ATSC
+			var intarnalFile = Path.withoutExtension(key);
 
-			if (bitmap == null)
-			{
-				trace('Bitmap not found: $file | key: $key');
-				return null;
+			#if ATSC_SUPPORT
+			var extension = ".astc";
+			var file:String = getPath(intarnalFile+extension, IMAGE, parentFolder, true);
+			trace(file);
+			bitmap = NativeFileSystem.getBitmap(file);
+			#end
+
+			if (bitmap == null){
+				var extension = ".png";
+				var file:String = getPath(intarnalFile+extension, IMAGE, parentFolder, true);
+				bitmap = NativeFileSystem.getBitmap(file);
+				if (bitmap == null)
+				{
+					trace('Bitmap not found: $file | key: $key');
+					return null;
+				}
 			}
 		}
 
@@ -340,6 +371,7 @@ class Paths
 		localTrackedAssets.push(key);
 		return graph;
 	}
+
 
 	inline static public function getTextFromFile(key:String, ?ignoreMods:Bool = false):String
 	{

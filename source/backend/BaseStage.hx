@@ -4,7 +4,6 @@ import substates.GameOverSubstate;
 import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxSubState;
-import flixel.group.FlxGroup;
 
 import objects.Note;
 import objects.Character;

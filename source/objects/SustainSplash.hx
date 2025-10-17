@@ -20,6 +20,7 @@ class SustainSplash extends FlxSprite
 		holding = false;
 		note = new Note();
 		note.visible = false;
+		timer = new FlxTimer();
 
 		x = -50000;
 		rnd = new FlxRandom();
@@ -28,6 +29,7 @@ class SustainSplash extends FlxSprite
 
 		animation.addByPrefix('hold', 'holdCover0', 24, true);
 		animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
+		if(!animation.getNameList().contains("hold")) trace("Hold splash is missing 'hold' anim!");
 	}
 
 	override function update(elapsed)
@@ -49,14 +51,19 @@ class SustainSplash extends FlxSprite
 		this.note.recycleNote(castNote);
 		note.strum = daNote.strum;
 		// trace(note.isSustainEnds);
+		timer.cancel();
+		
 		if (!note.isSustainEnds) {
 			visible = true; holding = true;
 
 			if (note.strum != null) setPosition(note.strum.x, note.strum.y);
 
 			animation.play('hold', true, false, 0);
-			animation.curAnim.frameRate = frameRate;
-			animation.curAnim.looped = true;
+			if (animation.curAnim != null)
+			{
+				animation.curAnim.frameRate = frameRate;
+				animation.curAnim.looped = true;
+			}
 
 			clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 
@@ -72,20 +79,21 @@ class SustainSplash extends FlxSprite
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note.strum.alpha);
 			offset.set(PlayState.isPixelStage ? 112.5 : 106.25, 100);
 		} else if (holding && ClientPrefs.data.holdSkin != "None") {
-			// trace("the timer started");
-
-			if (timer != null) timer.cancel();
-			timer = new FlxTimer().start(startCrochet / playbackRate * 0.001, (idk:FlxTimer) -> showEndSplash());
+			timer.start(startCrochet / playbackRate * 0.001, t -> showEndSplash(true));
 		}
 	}
 
-	public function sendSustainEnd() {
-		if (holding) showEndSplash();
+	public function sendSustainEnd(anim:Bool = true) {
+		if (holding) showEndSplash(anim);
 	}
 
-	function showEndSplash() {
+	public function isTimerWorking() {
+		return timer.active;
+	}
+
+	function showEndSplash(anim:Bool) {
 		holding = false;
-		if (animation != null)
+		if (anim && animation != null)
 		{
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note.strum.alpha);
 			animation.play('end', true, false, 0);
@@ -93,14 +101,13 @@ class SustainSplash extends FlxSprite
 			animation.curAnim.frameRate = rnd.int(22, 26);
 			clipRect = null;
 			animation.finishCallback = idkEither -> kill();
-			// trace("the timer works correctly");
 			return;
 		} else kill();
 	}
 
 	override function kill() {
 		holding = false;
-		timer.destroy();
+		timer.cancel();
 		super.kill();
 	}
 }

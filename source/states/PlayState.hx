@@ -1,5 +1,6 @@
 package states;
 
+import hrk.Eseq;
 import options.OptimizeSettingsSubState;
 import backend.StageData;
 import haxe.ds.ArraySort;
@@ -1848,9 +1849,9 @@ class PlayState extends MusicBeatState
 					if (Timer.stamp() - syncTime > updateTime || force)
 					{
 						if (numberDelimit) 
-							Sys.stdout().writeString('\x1b[0GLoading ${formatD(cnt)}/${formatD(sectionsData.length)} (${formatD(notes + sectionNoteCnt)} notes)');
+							Eseq.p('\x1b[0GLoading ${formatD(cnt)}/${formatD(sectionsData.length)} (${formatD(notes + sectionNoteCnt)} notes)');
 						else
-							Sys.stdout().writeString('\x1b[0GLoading $cnt/${sectionsData.length} (${notes + sectionNoteCnt} notes)');
+							Eseq.p('\x1b[0GLoading $cnt/${sectionsData.length} (${notes + sectionNoteCnt} notes)');
 						syncTime = Timer.stamp();
 					}
 				}

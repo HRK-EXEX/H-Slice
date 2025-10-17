@@ -24,6 +24,7 @@
 
 package backend;
 
+import hrk.Eseq;
 import haxe.Timer;
 import haxe.ds.Vector;
 
@@ -254,12 +255,12 @@ class SongJson {
 	}
 
 	function showProgress(force:Bool = false) {
-		if (force || Timer.stamp() - time > 0.1) {
+		if (force || Timer.stamp() - time > 0.01) {
 			if (Main.isConsoleAvailable && log) {
 				if (ClientPrefs.data.numberFormat)
-					Sys.stdout().writeString('\x1b[0G${CoolUtil.formatMoney(pos)}/${CoolUtil.formatMoney(str.length)}');
+					Eseq.p('\x1b[0G${CoolUtil.formatMoney(pos)}/${CoolUtil.formatMoney(str.length)}');
 				else
-					Sys.stdout().writeString('\x1b[0G$pos/${str.length}');
+					Eseq.p('\x1b[0G$pos/${str.length}');
 			}
 			time = Timer.stamp();
 		}
@@ -438,10 +439,10 @@ class SongJson {
 
 	function invalidChar() {
 		pos--; // rewind
-		throw "Invalid char " + StringTools.fastCodeAt(str, pos) + " at position " + pos;
+		throw "Invalid char " + StringTools.fastCodeAt(str, pos) + " at position " + pos.hex();
 	}
 
 	function invalidNumber(start:Int) {
-		throw "Invalid number at position " + start + ": " + str.substr(start, pos - start);
+		throw "Invalid number at position " + start.hex() + ": " + str.substr(start, pos - start);
 	}
 }

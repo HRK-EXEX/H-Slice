@@ -1,4 +1,7 @@
 #if !macro
+
+import haxe.Exception;
+
 //Discord API
 #if DISCORD_ALLOWED
 import backend.Discord;
@@ -24,8 +27,9 @@ import mobile.objects.TouchPad;
 import mobile.objects.TouchButton;
 import mobile.backend.MobileData;
 import mobile.input.MobileInputManager;
+import mobile.objects.TouchZone;
+import mobile.objects.ScrollableObject;
 #end
-
 // Android
 #if android
 import android.content.Context as AndroidContext;
@@ -36,7 +40,8 @@ import android.Settings as AndroidSettings;
 import android.Tools as AndroidTools;
 import android.os.Build.VERSION as AndroidVersion;
 import android.os.Build.VERSION_CODES as AndroidVersionCode;
-import android.os.BatteryManager as AndroidBatteryManager;
+//? Is this even used???
+//import android.os.BatteryManager as AndroidBatteryManager;
 #end
 
 #if sys

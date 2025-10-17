@@ -12,7 +12,13 @@ class Popup extends FlxSprite {
     public var popUpTime:Float = 0;
 	var placement:Float = FlxG.width * 0.35;
     var i:PlayState;
-    var tween:FlxTween;
+
+    // better computing acceleration
+    var vx = 0.0;
+    var vy = 0.0;
+    var ay = 0.0;
+    var time = 0.0;
+    var delay = 0.0;
 
     public function new() {
         super();
@@ -43,9 +49,9 @@ class Popup extends FlxSprite {
         screenCenter();
         x = placement - 40;
         y -= 60;
-        acceleration.y = 550;
-        velocity.y -= FlxG.random.int(140, 175);
-        velocity.x -= FlxG.random.int(0, 10);
+        ay = 550;
+        vy -= FlxG.random.int(140, 175);
+        vx -= FlxG.random.int(0, 10);
 
         visible = (!ClientPrefs.data.hideHud && i.showRating);
         x += ClientPrefs.data.comboOffset[0];
@@ -54,16 +60,8 @@ class Popup extends FlxSprite {
         
         setGraphicSize(Std.int(width * (PlayState.isPixelStage ? 0.85 * PlayState.daPixelZoom : 0.7)));
         updateHitbox();
-    }
 
-    public function ratingOtherStuff() {
-        tween = FlxTween.tween(this, {alpha: 0}, 0.2 / i.playbackRate, {
-            onComplete: tween -> {
-                kill();
-                tween = null;
-            },
-            startDelay: 1.0 / i.playbackRate
-        });
+        delay = 1.0 / i.playbackRate;
     }
 
     // ╔═════════════════════╗
@@ -82,24 +80,15 @@ class Popup extends FlxSprite {
         setGraphicSize(Std.int(width * (PlayState.isPixelStage ? PlayState.daPixelZoom : 0.5)));
         updateHitbox();
 
-        acceleration.y = FlxG.random.int(200, 300);
-        velocity.y -= FlxG.random.int(140, 160);
-        velocity.x = FlxG.random.float(-5, 5);
+        ay = FlxG.random.int(200, 300);
+        vy -= FlxG.random.int(140, 160);
+        vx = FlxG.random.float(-5, 5);
         
         visible = !ClientPrefs.data.hideHud;
         antialiasing = i.antialias;
 
         delimiter = null; comma = null;
-    }
-
-    public function numberOtherStuff() {
-        tween = FlxTween.tween(this, {alpha: 0}, 0.2 / i.playbackRate, {
-            onComplete: tween -> {
-                kill();
-                tween = null;
-            },
-            startDelay: 1.25 / i.playbackRate
-        });
+        delay = 1.25 / i.playbackRate;
     }
 
     // ╔════════════════════╗
@@ -111,37 +100,43 @@ class Popup extends FlxSprite {
         reloadTexture(comboImg);
         screenCenter();
         x = placement;
-        acceleration.y = FlxG.random.int(200, 300);
-        velocity.y -= FlxG.random.int(140, 160);
-        velocity.x += FlxG.random.int(1, 10);
+        ay = FlxG.random.int(200, 300);
+        vy -= FlxG.random.int(140, 160);
+        vx += FlxG.random.int(-10, 10);
         visible = (!ClientPrefs.data.hideHud && i.showCombo);
         x += 75 + ClientPrefs.data.comboOffset[4];
         y += 60 - ClientPrefs.data.comboOffset[5];
         antialiasing = i.antialias;
         setGraphicSize(Std.int(width * (PlayState.isPixelStage ? 0.7 * PlayState.daPixelZoom : 0.55)));
         updateHitbox();
+        
+        delay = 1.125 / i.playbackRate;
     }
 
-    public function comboOtherStuff() {
-        tween = FlxTween.tween(this, {alpha: 0}, 0.2 / i.playbackRate, {
-            onComplete: tween -> {
-                kill();
-                tween = null;
-            },
-            startDelay: 1.125 / i.playbackRate
-        });
+    override function update(elapsed:Float) {
+        elapsed /= i.playbackRate;
+        time += elapsed;
+        if (ay != 0) vy += ay * elapsed;
+        if (vx != 0) x += vx * elapsed;
+        if (vy != 0) y += vy * elapsed;
+        
+        if (time > delay) {
+            alpha -= elapsed * 5;
+            if (alpha <= 0) kill();
+        }
+        // super.update(elapsed);
     }
 
     override public function kill() {
         type = NONE;
-        super.kill();
+        exists = visible = false;
+        i.popUpGroup.push(this);
     }
 
     override public function revive() {
-        super.revive();
+        exists = visible = true;
         initVars();
-        acceleration.x = acceleration.y = velocity.x = velocity.y = x = y = 0;
-        alpha = 1;
-        visible = true;
+        delay = time = ay = vx = vy = x = y = 0;
+        alpha = 1; visible = true;
     }
 }

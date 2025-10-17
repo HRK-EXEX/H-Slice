@@ -58,9 +58,9 @@ class Language
 	inline public static function getPhrase(key:String, ?defaultPhrase:String, values:Array<Dynamic> = null):String
 	{
 		#if TRANSLATIONS_ALLOWED
-		//trace(formatKey(key));
-		phraseStr = phrases.get(formatKey(key));
-		if(phraseStr == null) phraseStr = defaultPhrase;
+		trace(formatKey(key));
+		var str:String = phrases.get(formatKey(key));
+		if(str == null) str = defaultPhrase;
 		#else
 		phraseStr = defaultPhrase;
 		#end

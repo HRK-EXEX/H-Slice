@@ -12,7 +12,7 @@ body:
   - type: textarea
     id: terminal
     attributes:
-      label: "Command Prompt/Terminal logs ()"
+      label: "Terminal logs (latest.log)"
       render: bash
     validations:
       required: false
@@ -25,6 +25,14 @@ body:
         - Lua
         - Source
         - No modding
+    validations:
+      required: true  
+
+  - type: input
+    id: hslice-version
+    attributes:
+      label: "In which version of H-Slice this occurs in (if it's the build from the Actions tab, then also include the commit hash of the build)"
+      placeholder: "0.2.2"
     validations:
       required: true
 

@@ -1,4 +1,3 @@
-name: Build
 
 on:
   workflow_call:
@@ -9,9 +8,6 @@ on:
       os:
         required: true
         type: string
-      setupScript:
-        required: true
-        type: string
       buildArgs:
         required: true
         type: string
@@ -19,6 +15,15 @@ on:
         required: true
         type: string
       artifactPath:
+        required: true
+        type: string
+      cachePath:
+        required: true
+        type: string
+      cacheLibrariesPath:
+        required: true
+        type: string
+      exportPath:
         required: true
         type: string
 
@@ -38,16 +43,41 @@ jobs:
         uses: krdlab/setup-haxe@master
         with:
           haxe-version: ${{ env.HAXE_VERSION }}
+      - name: Set XCode app
+        if: inputs.os == 'macos-15'
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Restore Libraries for compilation
+        id: load-lib-cache
+        uses: actions/cache@v3
+        with:
+          # not caching the bin folder to prevent asset duplication and stuff like that
+          key: ${{ inputs.cacheLibrariesPath }}
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+          path: |
+            .haxelib/
+          restore-keys: |
+            ${{ inputs.cacheLibrariesPath }}
+      - name: Restore existing build cache for faster compilation
+        id: load-cache
+        uses: actions/cache@v3
+        with:
+          # not caching the bin folder to prevent asset duplication and stuff like that
+          key: ${{ inputs.cachePath }}
+          path: |
+            export/release/${{ inputs.exportPath }}/haxe/
+            export/release/${{ inputs.exportPath }}/obj/
+          restore-keys: |
+            cache-build-${{ inputs.exportPath }}
+            
 
       - name: Install libVLC
-        if: inputs.name == 'Linux'
+        if: inputs.exportPath == 'linux'
         run: sudo apt install libvlc-dev libvlccore-dev
 
-      - name: Install Libraries
-        run: ${{ inputs.setupScript }}
-
       - name: Configure Android
-        if: inputs.name == 'Android'
+        if: inputs.exportPath == 'android'
         run: |
           haxelib run lime config ANDROID_SDK $ANDROID_HOME
           haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_LATEST_HOME
@@ -56,6 +86,24 @@ jobs:
 
       - name: Compile
         run: haxelib run lime build ${{ inputs.buildArgs }}
+
+      - name: Sign APK with the proper key
+        if: inputs.exportPath == 'android'
+        env:
+          OUT_DIR: ./export/release/android/bin/app/build/outputs/apk/release/
+          SIGNING_KEY: ${{ secrets.HRK_EXEX_PASSWORD }}
+          SIGNING_ALIAS: hslice
+          SIGNING_FILE: ${{ secrets.HRK_EXEX_KEYSTORE }}
+        run: |
+          rm -f ./hslice.keystore;
+          echo $SIGNING_FILE | base64 -d > ./hslice.keystore;
+          sha256sum ./hslice.keystore;
+
+          mv '${{env.OUT_DIR}}H-Slice-release.apk' '${{env.OUT_DIR}}H-Slice-unsigned.apk';
+          $ANDROID_HOME/build-tools/35.0.1/zipalign -P 16 -f -v 4 '${{env.OUT_DIR}}H-Slice-unsigned.apk' '${{env.OUT_DIR}}H-Slice-release.apk' > /dev/null;
+
+          $ANDROID_HOME/build-tools/35.0.1/apksigner sign --ks hslice.keystore --ks-key-alias $SIGNING_ALIAS --ks-pass "env:SIGNING_KEY" --key-pass "env:SIGNING_KEY" '${{env.OUT_DIR}}H-Slice-release.apk';
+          rm '${{env.OUT_DIR}}H-Slice-unsigned.apk';
 
       - name: Make IPA
         if: inputs.name == 'iOS'
@@ -70,4 +118,33 @@ jobs:
         with:
           name: ${{ inputs.artifactName }}
           path: ${{ inputs.artifactPath }}
-          if-no-files-found: error
+          if-no-files-found: error      
+
+      - name: Clearing already existing cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            for (const cache of caches.data.actions_caches) {
+              if (cache.key == "${{ inputs.cachePath }}") {
+                console.log('Clearing ' + cache.key + '...')
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                })
+                console.log("Cache cleared.")
+              }
+            }
+      - name: Uploading new cache
+        uses: actions/cache@v3
+        with:
+          key: ${{ inputs.cachePath }}
+          path: |
+            export/release/${{ inputs.exportPath }}/haxe/
+            export/release/${{ inputs.exportPath }}/obj/
+          restore-keys: |
+            ${{ inputs.cachePath }}

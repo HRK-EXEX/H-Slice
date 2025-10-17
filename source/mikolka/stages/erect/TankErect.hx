@@ -67,6 +67,7 @@ class TankErect extends BaseStage
 			if(!seenCutscene) setStartCallback(VideoCutscene.playVideo.bind('stressPicoCutscene',startCountdown));
 			setEndCallback(cutscene.playCutscene);
 		}
+		
 	}
 
 	override function beatHit()
@@ -104,6 +105,10 @@ class TankErect extends BaseStage
 		}
 		if (!VsliceOptions.LOW_QUALITY)
 		{
+			var bricks:BGSprite = new BGSprite('erect/bricksGround', 375, 640, 1, 1);
+			bricks.scale.set(1.15, 1.15);
+			add(bricks);
+
 			for (daGf in gfGroup)
 			{
 				var gf:Character = cast daGf;
@@ -178,7 +183,7 @@ class TankErect extends BaseStage
 				{
 					rim.setAdjustColor(-42, -10, 5, -25);
 					rim.distance = 3;
-					rim.threshold = 0.3;
+					rim.threshold = 0.1;
 					rim.altMaskImage = Paths.image("erect/masks/gfTankmen_mask").bitmap;
 					rim.maskThreshold = 1;
 					rim.useAltMask = true;
@@ -194,7 +199,7 @@ class TankErect extends BaseStage
 					rim.angle = 135;
 					rim.altMaskImage = Paths.image("erect/masks/tankmanCaptainBloody_mask").bitmap;
 					rim.maskThreshold = 1;
-					rim.threshold = 0.3;
+					rim.threshold = 0.1;
 					rim.useAltMask = true;
 
 					sprite.animation.callback = function(anim, frame, index)
@@ -205,6 +210,7 @@ class TankErect extends BaseStage
 			case "tankman":
 				{
 					rim.angle = 135;
+					rim.threshold = 0.1;
 					rim.maskThreshold = 1;
 					rim.useAltMask = false;
 
@@ -215,7 +221,7 @@ class TankErect extends BaseStage
 				}
 			case "nene":
 				{
-					rim.threshold = 0.3;
+					rim.threshold = 0.1;
 					rim.angle = 90;
 					sprite.animation.callback = function(anim, frame, index)
 					{

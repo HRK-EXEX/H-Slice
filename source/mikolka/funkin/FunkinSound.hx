@@ -1,10 +1,8 @@
 package mikolka.funkin;
 
+import mikolka.funkin.sound.FlxPartialSound;
 import openfl.media.Sound;
 import mikolka.vslice.freeplay.FreeplayState;
-import funkin.util.flixel.sound.FlxPartialSound;
-import haxe.exceptions.NotImplementedException;
-import openfl.media.SoundMixer;
 import flixel.system.FlxAssets.FlxSoundAsset;
 
 class FunkinSound extends FlxSound
@@ -78,7 +76,8 @@ class FunkinSound extends FlxSound
 
 		return sound;
 	}
-	
+
+	static var prevSound:Sound = null;
 	public static function playMusic(key:String, params:FunkinSoundPlayMusicParams):Bool {
 		var loaded:Bool = false;
 		if(params.pathsFunction == INST){
@@ -91,13 +90,17 @@ class FunkinSound extends FlxSound
 				#if MODS_ALLOWED
 				var modsInstPath = Paths.modFolders('songs/${Paths.formatToSongPath(key)}/Inst.${Paths.SOUND_EXT}');
 				var real_modSngPath = NativeFileSystem.getPathLike(modsInstPath);
+				#if (mac || ios)
+				if(real_modSngPath != null) instPath = haxe.io.Path.join([StorageUtil.getStorageDirectory(),real_modSngPath]);
+				#else
 				if(real_modSngPath != null) instPath = real_modSngPath;
+				#end
 
 				#end
 				
 				var future = FlxPartialSound.partialLoadFromFile(instPath,params.partialParams.start,params.partialParams.end);
 				if(future == null){
-					trace('Internal failure loading instrumentals for ${key} "${instPath}"');
+					#if debug trace('Internal failure loading instrumentals for ${key} "${instPath}"'); #end
 					return loaded;
 				}
 				future.future.onComplete(function(sound:Sound)
@@ -106,22 +109,28 @@ class FunkinSound extends FlxSound
 						loaded = true;
 					
 					@:privateAccess{
-					if(!Std.isOfType(FlxG.state.subState,FreeplayState)) return;
-					var fp = cast (FlxG.state.subState,FreeplayState);
+						if(!Std.isOfType(FlxG.state.subState,FreeplayState)) return;
+						var fp = cast (FlxG.state.subState,FreeplayState);
 
-						var cap = fp.grpCapsules.members[fp.curSelected];
+						var cap = fp.grpCapsules.activeSongItems[fp.curSelected];
 						if(cap.songData == null || cap.songData.getNativeSongId() != key || fp.busy) return;
 					}
 					
-					trace("Playing preview!");
+					#if debug trace("Playing preview!"); #end
+
 					FlxG.sound.playMusic(sound,0);
+					// #if (lime_vorbis && linux)
+					// prevSound?.close();
+					// prevSound = sound;
+					// #end
 					params.onLoad();
 				});
 				return true;
 			}
-			catch (x){
+			catch (x:Exception){
 				var targetPath = instPath == "" ? "" : "from "+instPath;
-				trace('Failed to parialy load instrumentals for ${key} ${targetPath}\nError: ${x.message}');
+				trace(x.message);
+				trace('Failed to parialy load instrumentals for ${key} ${targetPath}');
 				return false;
 			}
 		}

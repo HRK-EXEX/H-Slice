@@ -1,17 +1,25 @@
 package mikolka.vslice;
 
+import mikolka.funkin.custom.NativeFileSystem;
+import mikolka.vslice.freeplay.DifficultyStars;
 #if sys import mikolka.vslice.components.crash.Logger; #end
+import mikolka.funkin.utils.MathUtil;
+import openfl.Assets;
+import openfl.utils.Promise;
+import lime.app.Future;
 import openfl.events.MouseEvent;
 import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.Lib;
 import flixel.system.FlxBasePreloader;
-import mikolka.funkin.utils.MathUtil;
 import openfl.display.Sprite;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.text.TextFormatAlign;
 import shaders.VFDOverlay;
+#if !LEGACY_PSYCH
+import backend.Paths;
+#end
 
 using StringTools;
 
@@ -149,14 +157,8 @@ class FunkinPreloader extends FlxBasePreloader
 		this._height = Lib.current.stage.stageHeight;
 
 		// Tux icon!!!
-		#if (linux || mac) // fix the app icon not showing up on the Linux Panel
-		var icon = lime.graphics.Image.fromFile("icon.png");
-		Lib.current.stage.window.setIcon(icon);
-		#end
-		#if TITLE_SCREEN_EASTER_EGG
-		if (Date.now().getMonth() == 0 && Date.now().getDate() == 14)
-			Lib.current.stage.window.title = "Friday Night Funkin': Mikolka's Engine";
-		#end
+		Main.loadGameEarly();
+
 		// Scale assets to the screen size.
 		ratio = this._width / BASE_WIDTH / 2.0;
 
@@ -352,7 +354,9 @@ class FunkinPreloader extends FlxBasePreloader
 					preloadingPlayAssetsPercent = 0.0;
 
 					// This is quick enough to do synchronously.
-					// Assets.initialize();
+					// ? Some misc caching
+					// Cache assets list for future use
+					NativeFileSystem.openFlAssets = Assets.list();
 
 					/*
 						// Make a future to retrieve the manifest
@@ -400,6 +404,7 @@ class FunkinPreloader extends FlxBasePreloader
 				{
 					initializingScriptsPercent = 0.0;
 
+					// ? THis loads mods
 					/*
 						var future:Future<Array<String>> = []; // PolymodHandler.loadNoModsAsync();
 
@@ -424,22 +429,62 @@ class FunkinPreloader extends FlxBasePreloader
 				{
 					cachingGraphicsPercent = 0.0;
 					cachingGraphicsStartTime = elapsed;
+					#if !LEGACY_PSYCH
+					// ? P-Slice precache commonly used graphics
+					//* FIles here won't be editable by mods
+					var assetsToCache:Array<String> = [
+						// "images/cursor-default.png",
+						#if TOUCH_CONTROLS_ALLOWED
+						'mobile/images/touchpad/bg.png', 'mobile/images/touchpad/A.png', 'mobile/images/touchpad/B.png', 'mobile/images/touchpad/BACK.png',
+						'mobile/images/touchpad/PAUSE.png', 'mobile/images/touchpad/X.png', 'mobile/images/touchpad/Y.png', 'mobile/images/touchpad/UP.png',
+						'mobile/images/touchpad/DOWN.png', 'mobile/images/touchpad/LEFT.png', 'mobile/images/touchpad/RIGHT.png',
+						#end
+						"images/fonts/capsule-text.png",
+						"images/fonts/freeplay-clear.png",
+						"images/charSelect/lockedChill/spritemap1.png",
+						"images/freeplay/albumRoll/volume4.png" // "images/ui/cursor.png"
+					]; // Assets.listGraphics('core');
 
-					/*
-						var assetsToCache:Array<String> = []; // Assets.listGraphics('core');
+					var promise = new Promise<Any>();
+					new Future(() ->
+					{
+						for (index => item in assetsToCache)
+						{
+							try
+							{
+								
+								if (Paths.cacheBitmap(item) != null)
+								{
+									#if debug trace("Cached: " + item); #end
+									Paths.excludeAsset(item);
+								}
+								else
+								{
+									trace("Failed to cache: " + item);
+								}
+							}
+							catch (x:Exception)
+								trace("Exception when caching: " + x.message);
+							promise.progress(index + 1, assetsToCache.length);
+						}
+						promise.complete(null);
+					}, #if mac false #else true #end); // Assets.cacheAssets(assetsToCache);
 
-						var future:Future<Array<String>> = []; // Assets.cacheAssets(assetsToCache);
-						future.onProgress((loaded:Int, total:Int) -> {
-						  cachingGraphicsPercent = loaded / total;
-						});
-						future.onComplete((_result) -> {
-						  trace('Completed caching graphics.');
-						});
-					 */
+					promise.future.onProgress((loaded:Int, total:Int) ->
+					{
+						cachingGraphicsPercent = loaded / total;
+					});
+					promise.future.onComplete((_result) ->
+					{
+						cachingGraphicsComplete = true;
+						trace('Completed caching graphics.');
+					});
+					#else
 
-					// TODO: Reimplement this.
-					cachingGraphicsPercent = 1.0;
 					cachingGraphicsComplete = true;
+					cachingGraphicsPercent = 1.0;
+					#end
+
 					return 0.0;
 				}
 				else if (0.0 > 0)
@@ -540,33 +585,58 @@ class FunkinPreloader extends FlxBasePreloader
 				{
 					cachingDataPercent = 0.0;
 					cachingDataStartTime = elapsed;
+					#if !LEGACY_PSYCH
 
-					var assetsToCache:Array<String> = [];
-					var sparrowFramesToCache:Array<String> = [];
+					var assetsToCache:Array<String> = [
+					"freeplay/freeplayStars",
+					"freeplay/albumRoll/freeplayAlbum",
+					"freeplay/sortedLetters",
+					"charSelect/charSelectStage"
+					];
 
-					// Core files
-					// assetsToCache = assetsToCache.concat(Assets.listText('core'));
-					// assetsToCache = assetsToCache.concat(Assets.listJSON('core'));
-					// Core spritesheets
-					// assetsToCache = assetsToCache.concat(Assets.listXML('core'));
+					trace("Load misc");
+					// ? Some misc caching
+					// Cache assets list for future use
+					// load 6.4MB json file
 
-					// Gameplay files
-					// assetsToCache = assetsToCache.concat(Assets.listText('gameplay'));
-					// assetsToCache = assetsToCache.concat(Assets.listJSON('gameplay'));
-					// We're not caching gameplay spritesheets here because they're fetched on demand.
+						var promise = new Promise<Any>();
+					new Future(() ->
+					{
+						for (index => item in assetsToCache)
+						{
+							try
+							{
+								var text = NativeFileSystem.getContent('assets/shared/images/${item}/Animation.json');
+								var jsonBlob = haxe.Json.parse(text);
+								if (jsonBlob != null)
+								{
+									#if debug trace("Cached JSON: " + item); #end
+									mikolka.funkin.FlxAtlasSprite.ANIMATION_OBJECTS.set(item,jsonBlob);
+								}
+								else trace("JSON is null: " + item);
+								
+							}
+							catch (x:Exception)
+								trace("Exception when caching Anim JSON: " + x.message);
+							promise.progress(index + 1, assetsToCache.length);
+						}
+						promise.complete(null);
+					}, true); // Assets.cacheAssets(assetsToCache);
 
-					/*
-						var future:Future<Array<String>> = [];
-						// Assets.cacheAssets(assetsToCache, true);
-						future.onProgress((loaded:Int, total:Int) -> {
-						  cachingDataPercent = loaded / total;
-						});
-						future.onComplete((_result) -> {
-						  trace('Completed caching data.');
-						});
-					 */
-					cachingDataPercent = 1.0;
+					promise.future.onProgress((loaded:Int, total:Int) ->
+					{
+						cachingDataPercent = loaded / total;
+					});
+					promise.future.onComplete((_result) ->
+					{
+						cachingDataComplete = true;
+						trace('Completed caching JSONs.');
+					});
+					#else
+
 					cachingDataComplete = true;
+					cachingDataPercent = 1.0;
+					#end
 					return 0.0;
 				}
 				else if (0.0 > 0)
@@ -907,7 +977,9 @@ class FunkinPreloader extends FlxBasePreloader
 			renderLogoFadeIn(elapsed);
 
 			// Render progress bar
-			var piecesToRender:Int = Std.int(currentSteps / TOTAL_STEPS  * progressBarPieces.length);
+			var maxWidth = this._width - BAR_PADDING * 2;
+			var barWidth = maxWidth * percent;
+			var piecesToRender:Int = Std.int(percent * progressBarPieces.length);
 
 			for (i => piece in progressBarPieces)
 			{

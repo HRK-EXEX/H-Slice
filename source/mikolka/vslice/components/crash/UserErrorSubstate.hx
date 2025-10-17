@@ -1,9 +1,8 @@
 package mikolka.vslice.components.crash;
 
+import mikolka.funkin.custom.mobile.MobileScaleMode;
 import mikolka.compatibility.VsliceOptions;
-#if !LEGACY_PSYCH
-import states.TitleState;
-#end
+import mikolka.vslice.ui.title.TitleState;
 import mikolka.compatibility.ModsHelper;
 import haxe.CallStack.StackItem;
 import flixel.util.typeLimit.OneOfTwo;
@@ -139,7 +138,7 @@ class UserErrorSubstate extends MusicBeatSubstate
     public inline static function getLogger():String
 	{
 		return switch(VsliceOptions.LOGGING){
-			case "File": "Logs available in the 'latest.log' file";
+			case "Console & File", "File": "Logs available in the 'latest.log' file";
 			case "Console": "Check the console for logs";
 			case "None": "Logs disabled!";
 			default: "Is the logger corrupted???";
@@ -257,7 +256,7 @@ class UserErrorSubstate extends MusicBeatSubstate
 
 	function printToTrace(text:String):FlxText
 	{
-		var test_text = new FlxText(180, textNextY, 920, text.toUpperCase());
+		var test_text = new FlxText(180+MobileScaleMode.gameCutoutSize.x/4, textNextY, FlxG.width * 0.71, text.toUpperCase());
 		test_text.setFormat(Paths.font('vcr.ttf'), 35, FlxColor.WHITE, LEFT);
 		test_text.updateHitbox();
 		test_text.camera = camOverlay;

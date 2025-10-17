@@ -12,6 +12,7 @@ import mikolka.funkin.FlxFilteredSprite;
  */
 class PixelatedIcon extends FlxFilteredSprite
 {
+	private inline static final ICON_FRAMERATE = 10;
 	public var type:IconType;
 	public var thirdIcon:Bool;
 
@@ -22,6 +23,7 @@ class PixelatedIcon extends FlxFilteredSprite
 		this.antialiasing = false;
 		this.active = false;
 	}
+
 
 	public function setCharacter(char:String):Void
 	{
@@ -44,7 +46,7 @@ class PixelatedIcon extends FlxFilteredSprite
 				var charPath:String = "icons/";
 				charPath += "icon-";
 				charPath += '${char}';
-
+				
 				var image = Paths.image(charPath, ClientPrefs.data.cacheOnGPU);
 				if (image == null) // TODO
 				{

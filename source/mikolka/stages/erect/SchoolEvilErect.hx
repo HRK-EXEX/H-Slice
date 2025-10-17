@@ -13,8 +13,14 @@ import openfl.utils.Assets as OpenFlAssets;
 
 class SchoolEvilErect extends BaseStage
 {
-	var bg:BGSprite;
-	var wiggle:WiggleEffectRuntime;
+	var backSpikes:BGSprite;
+	var school:BGSprite;
+	var spike:BGSprite;
+	var street:BGSprite;
+	var wiggleBack:WiggleEffectRuntime = null;
+	var wiggleSchool:WiggleEffectRuntime = null;
+	var wiggleStreet:WiggleEffectRuntime = null;
+	var wiggleSpike:WiggleEffectRuntime = null;
 
 	override function create()
 	{
@@ -36,13 +42,26 @@ class SchoolEvilErect extends BaseStage
 			GameOverSubstate.characterName = 'bf-pixel-dead';
 		#end
 
-		var posX = 410;
-		var posY = 390;
+		backSpikes = new BGSprite('weeb/erect/evil/weebBackSpikes', -662, -60,0.5,0.5);
+		backSpikes.scale.set(PlayState.daPixelZoom, PlayState.daPixelZoom);
+		backSpikes.updateHitbox();
+		backSpikes.antialiasing = false;
+		add(backSpikes);
 
-		bg = new BGSprite('weeb/erect/evilSchoolBG', posX, posY, 0.8, 0.9);
-		bg.scale.set(PlayState.daPixelZoom, PlayState.daPixelZoom);
-		bg.antialiasing = false;
-		add(bg);
+		school = new BGSprite('weeb/erect/evil/weebSchool', -816, -38, 0.75, 0.75);
+		school.makePixel();
+		add(school);
+
+		spike = new BGSprite('weeb/erect/evil/backSpike', 1416, 464,0.85,0.85);
+		spike.makePixel();
+		add(spike);
+
+		var blackBg:FlxSprite = FunkinTools.makeSolidColor(new FlxSprite(-500, 660), 2400, 2000, 0xFF000000);
+		add(blackBg);
+
+		street = new BGSprite('weeb/erect/evil/weebStreet', -662, 6);
+		street.makePixel();
+		add(street);
 
 		setDefaultGF('gf-pixel');
 
@@ -60,8 +79,14 @@ class SchoolEvilErect extends BaseStage
 		var trail:FlxTrail = new FlxTrail(dad, null, 4, 24, 0.3, 0.069);
 		if (VsliceOptions.SHADERS)
 		{
-			wiggle = new WiggleEffectRuntime(2, 4, 0.017, WiggleEffectType.DREAMY);
-			bg.shader = wiggle;
+			wiggleBack = new WiggleEffectRuntime(2 * 0.8, 4 * 0.4, 0.011, WiggleEffectType.DREAMY);
+			wiggleSchool = new WiggleEffectRuntime(2, 4, 0.017, WiggleEffectType.DREAMY);
+			wiggleSpike = new WiggleEffectRuntime(2, 4, 0.01, WiggleEffectType.DREAMY);
+			wiggleStreet = new WiggleEffectRuntime(2, 4, 0.007, WiggleEffectType.DREAMY);
+			backSpikes.shader = wiggleBack;
+			school.shader = wiggleSchool;
+			spike.shader = wiggleSpike;
+			street.shader = wiggleStreet;
 		}
 		addBehindDad(trail);
 		if (VsliceOptions.SHADERS)
@@ -76,7 +101,10 @@ class SchoolEvilErect extends BaseStage
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		wiggle?.update(elapsed);
+		wiggleBack?.update(elapsed);
+		wiggleSchool?.update(elapsed);
+		wiggleSpike?.update(elapsed);
+		wiggleStreet?.update(elapsed);
 	}
 
 	// Ghouls event

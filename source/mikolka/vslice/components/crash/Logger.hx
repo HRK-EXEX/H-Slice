@@ -1,6 +1,6 @@
 package mikolka.vslice.components.crash;
 
-import haxe.ds.StringMap;
+import haxe.Exception;
 import flixel.system.debug.log.LogStyle;
 import mikolka.compatibility.VsliceOptions;
 #if sys
@@ -10,15 +10,29 @@ import haxe.Log;
 
 class Logger {
     private static var file:FileOutput;
+    public static var enforceLogSettings:Bool = false;
     public static function startLogging() {
         #if LEGACY_PSYCH
             file = File.write("latest.log");
         #else
+        try{
             file = File.write(StorageUtil.getStorageDirectory()+"/latest.log");
-            #if PROFILE_BUILD
-                LogStyle.WARNING.onLog.add(log);
+        }
+        catch(x:Exception){
+            #if (LEGACY_PSYCH)
+            FlxG.stage.window.alert(x.message, "File logging failed to init");
+            #else
+            #if macos
+            if(StorageUtil.getStorageDirectory().contains("AppTranslocation"))
+                CoolUtil.showPopUp("MacOS decided to isolate P-Slice from the rest of your system!"+
+                "As such, you need to move P-Slice away from the \"Downloads\" folder into either your applications, or another folder.","File logging failed to init");
+            else
             #end
-            LogStyle.ERROR.onLog.add(log);
+            CoolUtil.showPopUp(x.message,"File logging failed to init");
+            #end
+        }
+        LogStyle.WARNING.onLog.add(log);
+        LogStyle.ERROR.onLog.add(log);
         #end
         Log.trace = log;
     }

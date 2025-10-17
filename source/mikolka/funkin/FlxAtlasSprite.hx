@@ -3,6 +3,7 @@ package mikolka.funkin;
 import mikolka.compatibility.VsliceOptions;
 import flixel.util.FlxSignal.FlxTypedSignal;
 import flxanimate.FlxAnimate.Settings;
+import mikolka.compatibility.ModsHelper;
 import flixel.graphics.frames.FlxFrame;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import openfl.display.BitmapData;
@@ -15,6 +16,11 @@ import flxanimate.animate.FlxKeyFrame;
  */
 class FlxAtlasSprite extends PsychFlxAnimate
 {
+  /**
+   * A list of precached "animation.json" files in case they're used a lot
+   */
+  public static final ANIMATION_OBJECTS = new Map<String,Dynamic>();
+
   static final SETTINGS:Settings =
     {
       // ?ButtonSettings:Map<String, flxanimate.animate.FlxAnim.ButtonSettings>,
@@ -47,13 +53,16 @@ class FlxAtlasSprite extends PsychFlxAnimate
     SETTINGS.Antialiasing = VsliceOptions.ANTIALIASING; //? bit dirty, but should work
     if (path == null)
     {
-      throw 'Null path specified for FlxAtlasSprite!';
+      //throw 'Null path specified for FlxAtlasSprite!';
+    }
+    else if (path.startsWith("assets") || path.startsWith("mods")){
+      throw '$path is an absolute path. This is discouraged!';
     }
 
 
     super(x, y, path, settings);
 
-    if (this.anim.stageInstance == null)
+    if (this.anim.stageInstance == null && path != null)
     {
       throw 'FlxAtlasSprite not initialized properly. Are you sure the path (${path}) exists?';
     }
@@ -62,34 +71,19 @@ class FlxAtlasSprite extends PsychFlxAnimate
 
     // This defaults the sprite to play the first animation in the atlas,
     // then pauses it. This ensures symbols are intialized properly.
-    this.anim.play('');
-    this.anim.pause();
+    if (path != null)
+    {
+      //throw 'Null path specified for FlxAtlasSprite!';
+      this.anim.play('');
+      this.anim.pause();
+    }
 
     this.anim.onComplete.add(_onAnimationComplete);
     this.anim.onFrame.add(_onAnimationFrame);
   }
   //? P-Slice fix for mods
   override function loadAtlas(path:String) {
-    if(Assets.exists('$path/Animation.json')) {
-      super.loadAtlas(path);
-      return;
-    }
-    #if NATIVE_LOOKUP
-    try{
-      trace(path);
-      //? 'path' here is a full path to the image (do not resolve it. Load it!)
-      @:privateAccess
-      super.loadAtlasEx(BitmapData.fromFile(NativeFileSystem.addCwd('$path/spritemap1.png')),
-      File.getContent('$path/spritemap1.json'),
-        File.getContent('$path/Animation.json')
-        );
-    }
-    catch(x){
-      FlxG.log.error('Failed to load "$path" via EXtended loader: $x');
-      trace('Failed to load "$path" via EXtended loader: $x');
-    }
-    #end
-    
+      Paths.loadAnimateAtlas(this,path,null,ANIMATION_OBJECTS.get(path));
   }
   /**
    * @return A list of all the animations this sprite has available.

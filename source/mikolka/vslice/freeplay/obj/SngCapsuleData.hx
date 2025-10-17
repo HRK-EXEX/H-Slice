@@ -12,6 +12,7 @@ abstract class SngCapsuleData{
 	public var metaSngId:String = "";
 
 	public var isNew:Bool = false;
+	public var metaAllowNew:Bool = false;
 	public var folder:String = "";
 	public var color:Int = -7179779;
 
@@ -27,6 +28,7 @@ abstract class SngCapsuleData{
 	public var difficultyRating(default, null):Int = 0;
 	public var albumId(default, null):Null<String> = null;
 	public var songPlayer(default, null):String = '';
+	public var songWeekName(default, null):String = '';
 
 	public var freeplayPrevStart(default, null):Float = 0;
 	public var freeplayPrevEnd(default, null):Float = 0;
@@ -72,13 +74,14 @@ abstract class SngCapsuleData{
 		var meta = FreeplayMeta.getMeta(metaSngId);
 		difficultyRating = meta.songRating;
 
-		isNew = meta.allowNewTag;
+		metaAllowNew = meta.allowNewTag;
 		allowErect = meta.allowErectVariants;
 		freeplayPrevStart = meta.freeplayPrevStart / meta.freeplaySongLength;
 		freeplayPrevEnd = meta.freeplayPrevEnd / meta.freeplaySongLength;
 		albumId = meta.albumId;
 		instVariants = meta.altInstrumentalSongs.split(",");
 		songPlayer = meta.freeplayCharacter;
+		songWeekName = meta.freeplayWeekName;
 	}
 
 	abstract function updateValues():Void;

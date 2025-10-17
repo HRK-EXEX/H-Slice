@@ -22,18 +22,18 @@ class MallXmasErect extends BaseStage
 	{
 		var _song = PlayState.SONG;
 		
-		var bg:BGSprite = new BGSprite('christmas/erect/bgWalls', -1000, -500, 0.2, 0.2);
-		bg.setGraphicSize(Std.int(bg.width * 0.8));
+		var bg:BGSprite = new BGSprite('christmas/erect/bgWalls', -726, -566, 0.2, 0.2);
+		bg.setGraphicSize(Std.int(bg.width * 0.9));
 		bg.updateHitbox();
 		add(bg);
 
 		if(!VsliceOptions.LOW_QUALITY) {
-			upperBoppers = new BGSprite('christmas/erect/upperBop', -240, -90, 0.33, 0.33, ['upperBop']);
+			upperBoppers = new BGSprite('christmas/erect/upperBop', -374, -98, 0.28, 0.28, ['upperBop']);
 			upperBoppers.setGraphicSize(Std.int(upperBoppers.width * 0.85));
 			upperBoppers.updateHitbox();
 			add(upperBoppers);
 
-			var bgEscalator:BGSprite = new BGSprite('christmas/erect/bgEscalator', -1100, -600, 0.3, 0.3);
+			var bgEscalator:BGSprite = new BGSprite('christmas/erect/bgEscalator', -1100, -540, 0.3, 0.3);
 			bgEscalator.setGraphicSize(Std.int(bgEscalator.width * 0.9));
 			bgEscalator.updateHitbox();
 			add(bgEscalator);
@@ -57,8 +57,8 @@ class MallXmasErect extends BaseStage
 		setDefaultGF('gf-christmas');
 
 		if(songName == "eggnog-erect" || songName == "eggnog-(pico-mix)"){
-			erectSanta = new FlxAtlasSprite(-840 +380, 150 +347,"assets/week5/images/christmas/santa_speaks_assets");
-			erectParents = new FlxAtlasSprite(100 -620, 100 + 401,"assets/week5/images/christmas/parents_shoot_assets");	
+			erectSanta = new FlxAtlasSprite(-840 +380, 150 +347,"christmas/santa_speaks_assets");
+			erectParents = new FlxAtlasSprite(100 -620, 100 + 401,"christmas/parents_shoot_assets");	
 			setEndCallback(eggnogEndCutscene);
 		}
 	}

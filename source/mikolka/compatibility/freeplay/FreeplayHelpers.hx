@@ -1,5 +1,6 @@
 package mikolka.compatibility.freeplay;
 
+import hrk.Eseq;
 import haxe.Json;
 import haxe.Exception;
 import backend.StageData;
@@ -7,7 +8,6 @@ import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
 import mikolka.vslice.components.crash.UserErrorSubstate;
 import openfl.utils.AssetType;
-import mikolka.vslice.freeplay.pslice.FreeplayColorTweener;
 import mikolka.vslice.freeplay.pslice.BPMCache;
 import mikolka.vslice.freeplay.FreeplayState;
 import backend.Song;
@@ -75,8 +75,8 @@ class FreeplayHelpers {
 			{
 				if (Main.isConsoleAvailable) {
 					if (ClientPrefs.data.numberFormat)
-						Sys.stdout().writeString('\x1b[0GLoading Song (${CoolUtil.formatMoney(j+offset+1)}/${CoolUtil.formatMoney(songCount)})');
-					else Sys.stdout().writeString('\x1b[0GLoading Song (${j+offset+1}/$songCount)');
+						Eseq.p('\x1b[0GLoading Song (${CoolUtil.formatMoney(j+offset+1)}/${CoolUtil.formatMoney(songCount)})');
+					else Eseq.p('\x1b[0GLoading Song (${j+offset+1}/$songCount)');
 				}
 			
 				colors = song[2];
@@ -94,6 +94,12 @@ class FreeplayHelpers {
 			offset += leWeek.songs.length;
 		}
 		Sys.print("\n");
+		
+		// for mobile compability
+		#if mobile
+		if (!NativeFileSystem.exists('assets'))
+			NativeFileSystem.createDirectory('assets');
+		#end
 
 		File.saveContent("assets/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
 

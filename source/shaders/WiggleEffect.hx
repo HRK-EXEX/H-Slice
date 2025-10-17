@@ -8,6 +8,7 @@ enum WiggleEffectType
 	HEAT_WAVE_HORIZONTAL;
 	HEAT_WAVE_VERTICAL;
 	FLAG;
+	GLITCH;
 }
 
 class WiggleEffect
@@ -80,6 +81,7 @@ class WiggleShader extends FlxShader
 		const int EFFECT_TYPE_HEAT_WAVE_HORIZONTAL = 2;
 		const int EFFECT_TYPE_HEAT_WAVE_VERTICAL = 3;
 		const int EFFECT_TYPE_FLAG = 4;
+		const int EFFECT_TYPE_GLITCH = 5;
 		
 		uniform int effectType;
 		
@@ -125,6 +127,13 @@ class WiggleShader extends FlxShader
 			{
 				y = sin(pt.y * uFrequency + 10.0 * pt.x + uTime * uSpeed) * uWaveAmplitude;
 				x = sin(pt.x * uFrequency + 5.0 * pt.y + uTime * uSpeed) * uWaveAmplitude;
+			}
+			else if (effectType == EFFECT_TYPE_GLITCH)
+			{
+				float offsetX = sin(pt.y * uFrequency + uTime * uSpeed) * (uWaveAmplitude / pt.x * pt.y);
+				float offsetY = sin(pt.x * uFrequency - uTime * uSpeed) * (uWaveAmplitude / pt.y * pt.x);
+				pt.x += offsetX;
+				pt.y += offsetY;
 			}
 			
 			return vec2(pt.x + x, pt.y + y);

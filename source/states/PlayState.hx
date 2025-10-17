@@ -645,7 +645,7 @@ class PlayState extends MusicBeatState
 		
 		showPopups = showRating || showComboNum || showCombo;
 		if (showPopups) {
-			popUpGroup = new FlxTypedSpriteGroup<Popup>();
+			popUpGroup = new PopupGroup();
 			add(popUpGroup);
 		}
 
@@ -2621,7 +2621,7 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 			if (columnIndex < 0) columnIndex = FlxMath.maxInt(0, columns-1);
 
 			if (debugInfos) {
-				popUpDebug.fill(0); popUpAlive = 0;
+				ppopUpDebug.fill(0); popUpAlive = 0;
 				if (showPopups) {
 					popUpGroup.forEach(lmfao -> {
 						switch (lmfao.type) {
@@ -2632,7 +2632,6 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 						}
 					});
 				}
-
 				for (index in 0...popUpDebug.length) {
 					if (index != 0)
 						popUpAlive += popUpDebug[index];
@@ -4476,7 +4475,7 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 	public var totalNotesHit:Float = 0.0;
 	
 	// Stores Ratings and Combo Sprites in a group
-	public var popUpGroup:FlxTypedSpriteGroup<Popup>;
+	public var popUpGroup:PopupGroup;
 	// Stores HUD Objects in a Group
 	public var uiGroup:FlxSpriteGroup;
 	// Stores Note Objects in a Group
@@ -4552,24 +4551,19 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 		if (!ClientPrefs.data.comboStacking && popUpGroup.members.length > 0) {
 			for (spr in popUpGroup) {
 				spr.kill();
-				popUpGroup.remove(spr);
 			}
 		}
 
 		if (showRating && bfHit) {
 			ratingImage = cpuControlled || daRating == null ? forceSick.image : daRating.image;
 
-			ratingPop = popUpGroup.recycle(Popup);
+			ratingPop = popUpGroup.spawn();
 			ratingPop.setupRatingData(uiPrefix + ratingImage + uiPostfix);
-			ratingPop.ratingOtherStuff();
-			popUpGroup.add(ratingPop);
 		}
 
 		if (showCombo && combo >= 10) {
 			comboPop = popUpGroup.recycle(Popup);
 			comboPop.setupComboData(uiPrefix + 'combo' + uiPostfix);
-			comboPop.comboOtherStuff();
-			popUpGroup.add(comboPop);
 		}
 
 		if (showComboNum) {
@@ -4585,35 +4579,18 @@ Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}');
 				var delimiter = Std.int(index + 3 - comboDigit % 3);
 				var comma = delimiter % 3 == 0;
 				if (changePopup || combo >= 10 || combo == 0) {
-					numScore = popUpGroup.recycle(Popup);
+					numScore = popUpGroup.spawn();
 					numScore.setupNumberData(uiPrefix + 'num' + Std.int(number) + uiPostfix, index, comboDigit, numberDelimit);
 
-					if (showComboNum) popUpGroup.add(numScore);
-
-					numScore.numberOtherStuff();
-
 					if (comma && index > 0 && commaImg) {
-						numScore = popUpGroup.recycle(Popup);
+						numScore = popUpGroup.spawn();
 						numScore.setupNumberData(uiPrefix + 'numComma' + uiPostfix, index, comboDigit, numberDelimit);
-
-						if (showComboNum) popUpGroup.add(numScore);
-
-						numScore.numberOtherStuff();
 					}
 				}
 			}
 		}
 
-		// sorting shits
-		// try {
-		popUpGroup.sort(
-			(order, p1, p2) -> {
-				if (p1 != null && p2 != null) {
-					return FlxSort.byValues(FlxSort.ASCENDING, p1.popUpTime, p2.popUpTime);
-				} else return 0;
-			}
-		);
-		// } catch (e:haxe.Exception) { trace(popUpGroup.length); } // idk why but popUpGroup became null some cases
+		popUpGroup.stableSort();
 
 		for (i in seperatedScore) i = null;
 		daloop = null; tempCombo = null;

@@ -1,0 +1,66 @@
+on:
+  workflow_call:
+    inputs:
+      CACHE_NAME:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+      setupScript:
+        required: true
+        type: string
+# PE10-Desktop_Cache
+env:
+  HAXE_VERSION: 4.3.6
+  PROJECT_NAME: H-Slice
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ inputs.os }}
+    steps:
+      - name: Restore Libraries for compilation
+        id: load-lib-cache
+        uses: actions/cache@v3
+        with:
+          # not caching the bin folder to prevent asset duplication and stuff like that
+          key:  ${{ inputs.CACHE_NAME }}
+          enableCrossOsArchive: true
+          path: |
+            .haxelib/
+          restore-keys: |
+             ${{ inputs.CACHE_NAME }}
+
+      - name: Checkout
+        if: steps.load-lib-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@main
+
+      - name: Setup Haxe
+        if: steps.load-lib-cache.outputs.cache-hit != 'true'
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Setup haxelib
+        if: steps.load-lib-cache.outputs.cache-hit != 'true'
+        run: haxelib newrepo    
+
+      - name: Install Libraries
+        if: steps.load-lib-cache.outputs.cache-hit != 'true'
+        run: ${{ inputs.setupScript }}
+
+      - name: Install hxvlc for windows
+        run: haxelib install hxvlc 2.2.2 --quiet
+        if: inputs.os == 'ubuntu-latest' && steps.load-lib-cache.outputs.cache-hit != 'true'
+   
+      - name: Uploading new cache
+        if: steps.load-lib-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          key: ${{ inputs.CACHE_NAME }}
+          enableCrossOsArchive: true
+          path: |
+            .haxelib/
+          restore-keys: |
+            ${{ inputs.CACHE_NAME }}

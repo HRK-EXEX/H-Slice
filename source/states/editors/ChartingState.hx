@@ -1,7 +1,6 @@
 package states.editors;
 
-import flixel.math.FlxRect;
-import flixel.math.FlxRandom;
+import mikolka.funkin.custom.mobile.MobileScaleMode;
 import mikolka.funkin.custom.FreeplayMeta.FreeplayMetaJSON;
 import openfl.net.FileReference;
 import flixel.FlxSubState;
@@ -168,7 +167,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	public static var GRID_COLUMNS_PER_PLAYER = 4;
 	public static var GRID_PLAYERS = 2;
 	public static var GRID_SIZE = 40;
-
 	final BACKUP_EXT = '.bkp';
 
 	// 0.125 ~ 1048576
@@ -284,8 +282,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var waveformEnabled:Bool = false;
 	var waveformTarget:WaveformTarget = INST;
 
-	public static var youShallNotPass:Bool = true;
-
 	final sectionTemplate:SwagSection = {
 		sectionNotes: [],
 		sectionBeats: 4,
@@ -298,33 +294,30 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	override function create()
 	{
-		if (PlayState.chartingMode)
-			youShallNotPass = false;
-		if (youShallNotPass)
-		{
-			FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
+		#if DISABLE_CHART_EDITOR
+		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
 
-			FlxG.timeScale = 1;
-			for (i in 0...16)
-				FlxG.sound.play(Paths.sound('jumpscare'), 1).time = new FlxRandom().float(0, 5000);
-			Timer.delay(() -> openfl.Lib.application.window.close(), 1000);
+		FlxG.timeScale = 1;
+		var pitch = FlxG.random.bool() ? 0.2 : 1;
+		for (i in 0...(16 / FlxG.random.int(1, 16)))
+			FlxG.sound.play(Paths.sound('jumpscare'), 1).time = new FlxRandom().float(0, 5000);
+		Timer.delay(() -> openfl.Lib.application.window.close(), 1000);
 
-			initPsychCamera();
-			camUI = new FlxCamera();
-			camUI.bgColor.alpha = 0;
-			FlxG.cameras.add(camUI, false);
+		initPsychCamera();
+		camUI = new FlxCamera();
+		camUI.bgColor.alpha = 0;
+		FlxG.cameras.add(camUI, false);
 
-			var txt:FlxText = new FlxText(0, 0, FlxG.width, "you don't have permission of CONTROL.\nand it's still WIP yk.");
-			txt.setFormat(Paths.font("vcr.ttf"), 60, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			txt.y = (FlxG.height - txt.height) / 2;
-			txt.cameras = [camUI];
+		var txt:FlxText = new FlxText(0, 0, FlxG.width, "This build has restricted to use chart editor.");
+		txt.setFormat(Paths.font("vcr.ttf"), 60, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		txt.y = (FlxG.height - txt.height) / 2;
+		txt.cameras = [camUI];
 
-			add(txt);
+		add(txt);
 
-			super.create();
-			return;
-		}
-
+		super.create();
+		return;
+		#else
 		PlayState.chartingMode = true;
 
 		for (zoom in zoomList)
@@ -355,10 +348,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		FlxG.cameras.add(camUI, false);
 
 		chartEditorSave = new FlxSave();
-		chartEditorSave.bind('chart_editor_data', CoolUtil.getSavePath());
+		chartEditorSave.bind('chart_editor_data', CoolUtil.getSavePath(),(raw,err) -> {});
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
+		bg.setGraphicSize(Std.int(bg.width * 1.175));
+		bg.updateHitbox();
+		bg.screenCenter();
 		bg.scrollFactor.set();
 		add(bg);
 
@@ -389,6 +385,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		dummyArrow.setGraphicSize(GRID_SIZE, GRID_SIZE);
 		dummyArrow.updateHitbox();
 		dummyArrow.scrollFactor.x = 0;
+		dummyArrow.visible = false;
 		add(dummyArrow);
 
 		vortexIndicator = new FlxSprite(gridBg.x - GRID_SIZE, FlxG.height / 2).loadGraphic(Paths.image('editors/vortex_indicator'));
@@ -497,7 +494,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		selectionBox.visible = false;
 		add(selectionBox);
 
-		infoBox = new PsychUIBox(infoBoxPosition.x #if mobile - 900 #end, infoBoxPosition.y #if mobile - 250 #end, 220, 220, ['Information']);
+		//? Apply Mobile cutout offset
+		infoBoxPosition.x += (MobileScaleMode.gameCutoutSize.x / 2.5);
+		mainBoxPosition.x += (MobileScaleMode.gameCutoutSize.x / 2.5);
+		var upperBoxOffsetX = (MobileScaleMode.gameCutoutSize.x / 2.5);
+		
+		infoBox = new PsychUIBox(infoBoxPosition.x , infoBoxPosition.y , 220, 220, ['Information']);
 		infoBox.scrollFactor.set();
 		infoBox.cameras = [camUI];
 		infoText = new FlxText(15, 15, 230, '', 16);
@@ -525,7 +527,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (chartEditorSave.data.infoBoxPosition != null && chartEditorSave.data.infoBoxPosition.length > 1)
 			infoBox.setPosition(chartEditorSave.data.infoBoxPosition[0], chartEditorSave.data.infoBoxPosition[1]);
 
-		upperBox = new PsychUIBox(40, 40, 330, 300, ['File', 'Edit', 'View']);
+		upperBox = new PsychUIBox(40+upperBoxOffsetX, 40, 330, 300, ['File', 'Edit', 'View']);
 		upperBox.scrollFactor.set();
 		upperBox.isMinimized = true;
 		upperBox.minimizeOnFocusLost = true;
@@ -678,6 +680,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		#end
 
 		super.create();
+		#end
 	}
 
 	var gridColors:Array<FlxColor>;
@@ -892,8 +895,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var nextSectionTime:Float;
 	var curSectionTime:Float;
 	var secNum:Int;
-	var selectionBounds:FlxRect;
-	var noteBounds:FlxRect;
 
 	var minX:Float;
 	var diffX:Float;
@@ -958,11 +959,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	override function update(elapsed:Float)
 	{
-		if (youShallNotPass)
-		{
-			super.update(elapsed);
-			return;
-		}
+		#if DISABLE_CHART_EDITOR
+		super.update(elapsed);
+		return;
+		#else
 		// support latest flixel like git
 		#if (flixel <= "5.8.0")
 		mouseX = FlxG.mouse.screenX;
@@ -1007,8 +1007,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				dataToSave = haxe.Json.stringify(songCopy);
 				// trace(chartName, dataToSave);
 				#if sys
-				if (!NativeFileSystem.isDirectory('backups'))
-					NativeFileSystem.createDirectory('backups');
+				if(!NativeFileSystem.isDirectory('backups')) NativeFileSystem.createDirectory('backups');
 				File.saveContent('backups/$chartName.$BACKUP_EXT', dataToSave);
 
 				if (backupLimit > 0)
@@ -1576,7 +1575,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				if (!FlxG.keys.pressed.SHIFT && !holdingAlt)
 					resetSelectedNotes();
 
-				selectionBounds = selectionBox.getScreenBounds(null, camUI);
+				var selectionBounds = selectionBox.getScreenBounds(null, camUI);
 				for (note in curRenderedNotes)
 				{
 					if (note == null)
@@ -1584,7 +1583,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 					if (!selectedNotes.contains(note) || holdingAlt /*&& FlxG.overlap(selectionBox, note)*/) // overlap doesnt work here
 					{
-						noteBounds = note.getScreenBounds(null, camUI);
+						var noteBounds = note.getScreenBounds(null, camUI);
 						noteBounds.top -= scrollY;
 						noteBounds.bottom -= scrollY;
 
@@ -2060,7 +2059,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						closeNotes = curRenderedNotes.members.filter(function(note:MetaNote)
 						{
 							var chartY:Float = FlxG.mouse.y - note.chartY;
-							return ((note.isEvent && noteData < 0) || note.songData[1] == noteData) && chartY >= 0 && chartY < GRID_SIZE;
+							return ((note.isEvent && noteData <= -1) ||(note.songData[1] == noteData && !note.isEvent)) && chartY >= 0 && chartY < GRID_SIZE;
 						});
 						closeNotes.sort(function(a:MetaNote,
 								b:MetaNote) return Math.abs(a.strumTime - FlxG.mouse.y) < Math.abs(b.strumTime - FlxG.mouse.y) ? 1 : -1);
@@ -2370,6 +2369,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		outputTxt.visible = (outputAlpha > 0);
 		FlxG.camera.scroll.y = scrollY;
 		lastFocus = PsychUIInputText.focusOn;
+		#end
 	}
 
 	function moveSelectedNotes(noteData:Int = 0, lastY:Float) // This turns selected notes into moving notes
@@ -2692,6 +2692,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		characterName.text = songMetadata.freeplayCharacter;
 		chk_allowNew.checked = songMetadata.allowNewTag;
 		chk_hasErect.checked = songMetadata.allowErectVariants;
+		txt_weekName.text = songMetadata.freeplayWeekName;
 
 		txt_altInstSong.text = songMetadata.altInstrumentalSongs;
 		albumName.text = songMetadata.albumId;
@@ -4548,7 +4549,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	var txt_altVariantSong:PsychUIInputText;
 	var txt_altInstSong:PsychUIInputText;
-
+	var txt_weekName:PsychUIInputText;
+	
 	var albumName:PsychUIInputText;
 	var exportMetadataBtn:PsychUIButton;
 
@@ -4560,12 +4562,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		prevStartInput = new PsychUINumericStepper(20, 70, 1, 0, 0, 999, 2, 80);
 		characterName = new PsychUIInputText(180, 70, 100, "", 8);
 
-		prevEndInput = new PsychUINumericStepper(20, 120, 1, 0, 0, 999, 2, 80);
-		albumName = new PsychUIInputText(180, 120, 100, "", 8);
-		chk_allowNew = new PsychUICheckBox(180, 30, "Show \"new\" tag");
-		chk_hasErect = new PsychUICheckBox(180, 200, "Has erect variant");
-
-		txt_altInstSong = new PsychUIInputText(20, 160, 250, "", 8);
+		prevEndInput = new PsychUINumericStepper(20, 120,1,0,0,999,2,80);
+		albumName = new PsychUIInputText(180,120,100,"",8);
+		chk_allowNew = new PsychUICheckBox(180,30,"Show \"new\" tag");
+		chk_hasErect = new PsychUICheckBox(180,200,"Has erect variant");
+		
+		txt_altInstSong = new PsychUIInputText(20,160,250,"",8);
 
 		exportMetadataBtn = new PsychUIButton(20, 200, "Export metadata", onMetadataSaveClick.bind(), 110);
 
@@ -4586,6 +4588,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(meta_label(txt_altInstSong, 'Song alt vocals (separated with \',\'):'));
 		tab_group.add(txt_altInstSong);
 		tab_group.add(chk_hasErect);
+		tab_group.add(meta_label(txt_weekName,"Card week name")); 
+		tab_group.add(txt_weekName); //freeplayWeekName
 
 		tab_group.add(exportMetadataBtn);
 	}
@@ -4607,8 +4611,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		meta.freeplayCharacter = characterName.text;
 		meta.allowNewTag = chk_allowNew.checked;
 		meta.allowErectVariants = chk_hasErect.checked;
-		meta.freeplaySongLength = FlxG.sound.music.length / 1000;
-
+		meta.freeplaySongLength = FlxG.sound.music.length/1000;
+		
 		var data:String = haxe.Json.stringify(meta, "\t");
 		#if mobile
 		StorageUtil.saveContent('metadata.json', data);
@@ -6251,7 +6255,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		MetaNote.noteTypeTexts = [];
 		fileDialog.destroy();
-		ChartingState.youShallNotPass = true;
 		super.destroy();
 	}
 

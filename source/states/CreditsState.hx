@@ -1,5 +1,6 @@
 package states;
 
+import mikolka.funkin.custom.mobile.MobileScaleMode;
 import objects.AttachedSprite;
 
 class CreditsState extends MusicBeatState
@@ -27,8 +28,10 @@ class CreditsState extends MusicBeatState
 		persistentUpdate = true;
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		add(bg);
+		bg.setGraphicSize(Std.int(bg.width * 1.175));
+		bg.updateHitbox();
 		bg.screenCenter();
+		add(bg);
 		
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
@@ -47,9 +50,9 @@ class CreditsState extends MusicBeatState
 			['Mikolka9144',			'mikolka',			'The lead for the mod',								 'https://gamebanana.com/members/3329541',									'2ebcfa'],
 			[""],
 			['P-Slice Contributors'],
-			['mcagabe19',			'lily',             'Porter of P-slice for mobile devices and creator of linc_luajit-rewritten (used for mobile builds)',                       'https://youtube.com/@mcagabe19',		'FFE7C0'],
+			["Derpy The Hedgeone",	'derpy',			'Made a lot of PRs to the repo',									'https://github.com/DerpyTheHedgeone',	'd86b00'],
+			["Mykarm",				'mykarm',			'Made the new icon and promational art for P-Slice',				'https://x.com/cronviersmeat/status/1849059676467417311?s=46&t=4dcTT7PAMkRJ8zYd4LgTow',	'29170a'],
 			["Fazecarl",			'fazecarl',			'Made the new logo for P-Slice',									'https://gamebanana.com/members/2121406',	'29170a'],
-			["Mykarm",				'mykarm',			'Made the new icon for P-Slice',									'https://x.com/cronviersmeat/status/1849059676467417311?s=46&t=4dcTT7PAMkRJ8zYd4LgTow',	'29170a'],
 			[""],
 			["P-Slice server"],
 			["Join our community",	"ppslice",			"",																"https://discord.gg/9FCyCqEvRf",			"5e36c4"],
@@ -57,8 +60,6 @@ class CreditsState extends MusicBeatState
 			["Psych Engine Team"],
 			["Shadow Mario",		"shadowmario",		"Main Programmer and Head of Psych Engine",					"https://ko-fi.com/shadowmario",	"444444"],
 			["Riveren",				"riveren",			"Main Artist/Animator of Psych Engine",						"https://x.com/riverennn",			"14967B"],
-			[""],
-			["Former Engine Members"],
 			["bb-panzu",			"bb",				"Ex-Programmer of Psych Engine",							"https://x.com/bbsub3",				"3E813A"],
 			[""],
 			["Engine Contributors"],
@@ -132,7 +133,9 @@ class CreditsState extends MusicBeatState
 		descBox.alpha = 0.6;
 		add(descBox);
 
-		descText = new FlxText(50, FlxG.height + offsetThing - 25, 1180, "", 32);
+		var txtWidthOffset:Float = Math.max(MobileScaleMode.gameCutoutSize.x / 2,50);
+
+		descText = new FlxText(txtWidthOffset, FlxG.height + offsetThing - 25, FlxG.width-(txtWidthOffset*2), "", 32);
 		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER/*, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK*/);
 		descText.scrollFactor.set();
 		descText.antialiasing = ClientPrefs.data.antialiasing;
@@ -264,6 +267,7 @@ class CreditsState extends MusicBeatState
 	
 			descBox.setGraphicSize(Std.int(descText.width + 20), Std.int(descText.height + 25));
 			descBox.updateHitbox();
+			
 		}
 		else descText.visible = descBox.visible = false;
 	}

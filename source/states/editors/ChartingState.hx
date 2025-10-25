@@ -323,11 +323,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		#else
 		PlayState.chartingMode = true;
 
-		for (zoom in zoomList)
-		{
-			if (zoom >= 4)
-				quantizations.push(Std.int(zoom));
-		}
+		quantizations = [for (zoom in zoomList) if (zoom >= 1.5) Std.int(zoom)];
 
 		if (Difficulty.list.length < 1)
 			Difficulty.resetList();
@@ -1514,17 +1510,17 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				if (FlxG.keys.justPressed.LEFT != FlxG.keys.justPressed.RIGHT) // Lower/Higher quant
 				{
 					if (FlxG.keys.justPressed.LEFT)
-						curQuant = quantizations[Std.int(Math.max(quantizations.indexOf(curQuant) - 1, 0))];
+						curQuant = quantizations[FlxMath.maxInt(quantizations.indexOf(curQuant) - 1, 0)];
 					else
-						curQuant = quantizations[Std.int(Math.min(quantizations.indexOf(curQuant) + 1, quantizations.length - 1))];
+						curQuant = quantizations[FlxMath.minInt(quantizations.indexOf(curQuant) + 1, quantizations.length - 1)];
 					forceDataUpdate = true;
 				}
 				else if (justPressed_Z != justPressed_X) // Decrease/Increase Zoom
 				{
 					if (justPressed_Z)
-						curZoom = zoomList[Std.int(Math.max(zoomList.indexOf(curZoom) - 1, 0))];
+						curZoom = zoomList[FlxMath.maxInt(zoomList.indexOf(curZoom) - 1, 0)];
 					else if (FlxG.keys.justPressed.X || (FlxG.keys.pressed.CONTROL && FlxG.mouse.wheel > 0))
-						curZoom = zoomList[Std.int(Math.min(zoomList.indexOf(curZoom) + 1, zoomList.length - 1))];
+						curZoom = zoomList[FlxMath.minInt(zoomList.indexOf(curZoom) + 1, zoomList.length - 1)];
 
 					curSong.notes[curSec].sectionNotes.sort(sortByStrumTime);
 					noteSec = 0;
@@ -1671,7 +1667,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					if (isMovingNotes)
 					{
 						// Move note data
-						var nData:Int = Std.int(Math.max(0, noteData));
+						var nData:Int = FlxMath.maxInt(0, noteData);
 						if (movingNotesLastData != nData)
 						{
 							var isFirst:Bool = true;
@@ -1855,7 +1851,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 										strumTime,
 										[
 											[
-												eventsList[Std.int(Math.max(eventDropDown.selectedIndex, 0))][0],
+												eventsList[FlxMath.maxInt(eventDropDown.selectedIndex, 0)][0],
 												value1InputText.text,
 												value2InputText.text
 											]
@@ -1984,7 +1980,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				if (isMovingNotes)
 				{
 					// Move note data
-					var nData:Int = Std.int(Math.max(0, noteData));
+					var nData:Int = FlxMath.maxInt(0, noteData);
 					if (movingNotesLastData != nData)
 					{
 						var isFirst:Bool = true;
@@ -2172,7 +2168,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 									strumTime,
 									[
 										[
-											eventsList[Std.int(Math.max(eventDropDown.selectedIndex, 0))][0],
+											eventsList[FlxMath.maxInt(eventDropDown.selectedIndex, 0)][0],
 											value1InputText.text,
 											value2InputText.text
 										]
@@ -2574,7 +2570,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				strumTimeStepper.value = metaNote.strumTime;
 
 				susLengthLastVal = susLengthStepper.value = metaNote.sustainLength;
-				noteTypeDropDown.selectedIndex = Std.int(Math.max(0, noteTypes.indexOf(metaNote.noteType)));
+				noteTypeDropDown.selectedIndex = FlxMath.maxInt(0, noteTypes.indexOf(metaNote.noteType));
 			}
 			else
 			{
@@ -3654,7 +3650,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			genericEventButton(function(event:EventMetaNote)
 			{
 				event.events.push([
-					eventsList[Std.int(Math.max(eventDropDown.selectedIndex, 0))][0],
+					eventsList[FlxMath.maxInt(eventDropDown.selectedIndex, 0)][0],
 					value1InputText.text,
 					value2InputText.text
 				]);
@@ -4570,6 +4566,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		chk_allowNew = new PsychUICheckBox(180,30,"Show \"new\" tag");
 		chk_hasErect = new PsychUICheckBox(180,200,"Has erect variant");
 		
+		txt_weekName = new PsychUIInputText(180,200,100,"");
 		txt_altInstSong = new PsychUIInputText(20,160,250,"",8);
 
 		exportMetadataBtn = new PsychUIButton(20, 200, "Export metadata", onMetadataSaveClick.bind(), 110);
@@ -4724,7 +4721,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			}
 
 			fileList.sort((a:String, b:String) -> (a.toUpperCase() < b.toUpperCase()) ? 1 : -1); // Sort alphabetically descending
-			var maxItems:Int = Std.int(Math.min(5, fileList.length));
+			var maxItems:Int = FlxMath.minInt(5, fileList.length);
 			var radioGrp:PsychUIRadioGroup = new PsychUIRadioGroup(0, 0, fileList, 25, maxItems, false, 240);
 			radioGrp.checked = 0;
 

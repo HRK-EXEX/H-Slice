@@ -2234,7 +2234,6 @@ class PlayState extends MusicBeatState
 	var startedCountdown:Bool = false;
 	var canPause:Bool = true;
 	var freezeCamera:Bool = false;
-	var allowDebugKeys:Bool = false;
 	var bfAnimName:String = "";
 
 	// Time
@@ -2402,7 +2401,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (!endingSong && !inCutscene && allowDebugKeys)
+		if (!endingSong && !inCutscene)
 		{
 			if (controls.justPressed('debug_1')) {
 				openChartEditor();

@@ -61,6 +61,12 @@ class TitleState extends MusicBeatState
 		Paths.clearStoredMemory();
 		super.create();
 		Paths.clearUnusedMemory();
+
+		try {
+			Eseq.p('Console Available!');
+		} catch (e) {
+			Eseq.available = false;
+		}
 		startIntro();
 	}
 

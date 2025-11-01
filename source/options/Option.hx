@@ -98,10 +98,8 @@ class Option
 	public function change()
 	{
 		//nothing lol
-		if(onChange != null) {
-			onChange();
-			FlxG.sound.play(Paths.sound('scrollMenu'));
-		}
+		if(onChange != null) onChange();
+		
 	}
 
 	dynamic public function getValue():Dynamic

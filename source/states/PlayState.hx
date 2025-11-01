@@ -849,8 +849,8 @@ class PlayState extends MusicBeatState
 
 		if (enableHoldSplash) {
 			for (i in 0...susplashMap.length) {
-				var holdSplash:SustainSplash = grpHoldSplashes.recycle(SustainSplash);
-				holdSplash.alpha = 0.0001;
+				var holdSplash:SustainSplash = new SustainSplash();
+				holdSplash.alpha = 0.000001;
 				holdSplash.alive = false;
 				holdSplash.exists = false;
 				susplashMap[i] = holdSplash;
@@ -2761,8 +2761,7 @@ class PlayState extends MusicBeatState
 		
 		// upScroll only
 		if (!downScroll && infoTxt.text.length > 0) {
-			var infoTxtAlign:Int = CoolUtil.charAppearanceCnt(infoTxt.text, "\n");
-			infoTxt.y = healthBar.y - 48 - (showInfoType != "None" ? 36 * infoTxtAlign : 0);
+			infoTxt.y = healthBar.y - 8 - infoTxt.height;
 		}
 
 		#if debug
@@ -3164,7 +3163,7 @@ class PlayState extends MusicBeatState
 			
 			if (enableHoldSplash) {
 				for (holdSplash in susplashMap) {
-					if (holdSplash != null && (susEnds & 1 > 0)) holdSplash.sendSustainEnd(true);
+					if (holdSplash != null && (susEnds & 1 > 0)) holdSplash.showEndSplash();
 					susEnds >>= 1;
 				}
 			}
@@ -4597,10 +4596,10 @@ class PlayState extends MusicBeatState
 			spr.playAnim('static');
 			spr.resetAnim = 0;
 
-			if (enableHoldSplash) {
-				var susplash = grpHoldSplashes.members[key];
-				if (susplash != null) susplash.sendSustainEnd(susplash.isTimerWorking());
-			}
+			// if (enableHoldSplash) {
+			// 	var susplash = grpHoldSplashes.members[key];
+			// 	if (susplash != null && susplash.isTimerWorking()) susplash.showEndSplash();
+			// }
 		}
 		callOnScripts('onKeyRelease', [key]);
 	}
@@ -4886,7 +4885,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (splashOpponent && !note.noteSplashData.disabled) {
-			if (enableHoldSplash && note.isSustainNote) spawnHoldSplashOnNote(note);
+			if (enableHoldSplash && note.isSustainNote) spawnHoldSplash(note);
 			if (enableSplash && !note.isSustainNote) spawnNoteSplashOnNote(note);
 		}
 	
@@ -5016,7 +5015,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (!note.noteSplashData.disabled) {
-			if (enableHoldSplash && note.isSustainNote) spawnHoldSplashOnNote(note);
+			if (enableHoldSplash && note.isSustainNote) spawnHoldSplash(note);
 			if (enableSplash && !note.isSustainNote) spawnNoteSplashOnNote(note);
 		}
 
@@ -5048,31 +5047,24 @@ class PlayState extends MusicBeatState
 		if (betterRecycle) notes.push(note);
 	}
 
-	public function spawnHoldSplashOnNote(note:Note) {
-		if (note != null)
-			if(note.strum != null)
-				spawnHoldSplash(note);
-	}
-
 	public static var susplashMap:Vector<SustainSplash> = new Vector(8);
-	var susplash:SustainSplash = null;
-	var tempSplash:SustainSplash = null;
-	var isUsedSplash:Bool = false;
-	var susplashIndex:Int = 0;
-	var holdSplashStrum:StrumNote = null;
 
 	public function spawnHoldSplash(note:Note) {
-		susplashIndex = (note.mustPress ? 4 : 0) + note.noteData;
-		susplash = susplashMap[susplashIndex];
-		isUsedSplash = susplash.holding;
+		if (note == null || note.strum == null) return;
+		var susplashIndex:Int = (note.mustPress ? 4 : 0) + note.noteData;
+		var susplash = susplashMap[susplashIndex];
+		var isUsedSplash = susplash.holding;
 
 		if (!isUsedSplash || isUsedSplash && note.isSustainEnds) {
-			holdSplashStrum = note.mustPress ? playerStrums.members[note.noteData] : opponentStrums.members[note.noteData];
+			var holdSplashStrum = note.mustPress ? playerStrums.members[note.noteData] : opponentStrums.members[note.noteData];
 			if (note.strum != splashStrum) note.strum = holdSplashStrum;
+			
+			if (note.isSustainEnds) {
+				SustainSplash.startCrochet = Conductor.stepCrochet - (Conductor.songPosition - note.strumTime);
+			}
 
 			susplash.setupSusSplash(note, playbackRate);
-
-			susplashMap[susplashIndex] = susplash;
+			
 			if (!isUsedSplash) {
 				// trace("Index " + susplashIndex + " was added.");
 				grpHoldSplashes.add(susplash);

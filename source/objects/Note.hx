@@ -160,7 +160,7 @@ class Note extends FlxSprite
 	public var copyY:Bool = true;
 	public var copyAngle:Bool = true;
 	public var copyAlpha:Bool = true;
-	public var copyScale:Bool = true;
+	// public var copyScale:Bool = true;
 
 	public var hitHealth:Float = 0.02;
 	public var missHealth:Float = 0.1;
@@ -545,11 +545,13 @@ class Note extends FlxSprite
 				y += correctionOffset * Math.sin(angleRad) + (originalHeight - height) * (-Math.sin(angleRad) + 1) * 0.5;
 			}
 		}
-		if(copyScale){
-			scale.x = strum.scale.x;
-			if(!isSustainNote) scale.y = strum.scale.y;
-			updateHitbox();
-		}
+
+		// wtf is this
+		// if (copyScale) {
+		// 	scale.x = strum.scale.x;
+		// 	if(!isSustainNote) scale.y = strum.scale.y;
+		// 	updateHitbox();
+		// }
 	}
 
 	var swagRect:FlxRect;
@@ -663,7 +665,7 @@ class Note extends FlxSprite
 			} else scale.set(PlayState.daPixelZoom, PlayState.daPixelZoom);
 		}
 
-		if (isSustainNote && sustainScale != 1 && !isSustainEnds)
+		if (sustainScale != 1 && !isSustainEnds)
 			resizeByRatio(sustainScale);
 		clipRect = null;
 		x += offsetX;

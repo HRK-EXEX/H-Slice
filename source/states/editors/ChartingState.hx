@@ -3148,8 +3148,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			trace(minTime, sections.sectionNotes[0][0], maxTime);
 			if (!curSecFilter(sections.sectionNotes[0][0]))
 			{
-				if (sections.sectionNotes[0][0] >= maxTime)
-					break;
+				if (sections.sectionNotes[0][0] >= maxTime) break;
 				index += curSong.notes.length;
 				continue;
 			}

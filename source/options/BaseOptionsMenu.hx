@@ -75,10 +75,10 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		var txtWidthOffset:Float = Math.max(MobileScaleMode.gameCutoutSize.x / 2,50);
 
-		descText = new FlxText(txtWidthOffset, 600, FlxG.width-(txtWidthOffset*2), "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText = new FlxText(txtWidthOffset, 600, FlxG.width-(txtWidthOffset*2), "", 24);
+		descText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.scrollFactor.set();
-		descText.borderSize = 2.4;
+		descText.borderSize = 2;
 		descText.antialiasing = ClientPrefs.data.antialiasing;
 		add(descText);
 
@@ -137,7 +137,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		add(button);
 		#end
 
-		FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
+		// FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
 	}
 
 	public function addOption(option:Option) {
@@ -334,6 +334,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	function onAcceptPress()
 	{
+		FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
 		switch (curOption.type)
 		{
 			case BOOL:

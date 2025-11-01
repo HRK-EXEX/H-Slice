@@ -1,5 +1,6 @@
 package mikolka.vslice;
 
+import hrk.Eseq;
 import mikolka.funkin.custom.NativeFileSystem;
 import mikolka.vslice.freeplay.DifficultyStars;
 #if sys import mikolka.vslice.components.crash.Logger; #end
@@ -956,46 +957,14 @@ class FunkinPreloader extends FlxBasePreloader
 
 	function updateGraphics(percent:Float, elapsed:Float):Void
 	{
-		// Render logo (including transitions)
-		if (completeTime > 0.0)
-		{
-			var elapsedFinished:Float = renderLogoFadeOut(elapsed);
-			// trace('Fading out logo... (' + elapsedFinished + 's)');
-			if (elapsedFinished > LOGO_FADE_TIME)
-			{
-				#if TOUCH_HERE_TO_PLAY
-				// The logo has faded out, but we're not quite done yet.
-				// In order to prevent autoplay issues, we need the user to click after the loading finishes.
-				currentState = FunkinPreloaderState.TouchHereToPlay;
-				#else
-				immediatelyStartGame();
-				#end
-			}
-		}
-		else
-		{
-			renderLogoFadeIn(elapsed);
-
-			// Render progress bar
-			var maxWidth = this._width - BAR_PADDING * 2;
-			var barWidth = maxWidth * percent;
-			var piecesToRender:Int = Std.int(percent * progressBarPieces.length);
-
-			for (i => piece in progressBarPieces)
-			{
-				piece.alpha = i <= piecesToRender ? 0.9 : 0.1;
-			}
-		}
-
-		// progressBar.width = barWidth;
-
 		// Cycle ellipsis count to show loading
 		var ellipsisCount:Int = Std.int(elapsed / ELLIPSIS_TIME) % 3 + 1;
 		var ellipsis:String = '';
 		for (i in 0...ellipsisCount)
 			ellipsis += '.';
 
-		var percentage = CoolUtil.floatToStringPrecision((previousSteps + percent) * 100.0 / TOTAL_STEPS, 1);
+		var newPercent = (previousSteps + percent) / (TOTAL_STEPS + 1);
+		var percentage = CoolUtil.floatToStringPrecision(newPercent * 100.0, 1);
 		var loadTime:Float = CoolUtil.floorDecimal(elapsed, 3);
 		previousSteps = currentSteps;
 		// Render status text
@@ -1032,10 +1001,43 @@ class FunkinPreloader extends FlxBasePreloader
 			#end
 		}
 		
-		if (previousSteps != currentSteps) Sys.println('Preloader state ($currentSteps/$TOTAL_STEPS) $currentState ($percentage%, ${loadTime}s)');
+		if (previousSteps != currentSteps) Eseq.p('Preloader state ($currentSteps/$TOTAL_STEPS) $currentState ($percentage%, ${loadTime}s)\n');
 
 		// Render percent text
 		progressRightText.text = '$percentage%';
+
+		// Render logo (including transitions)
+		if (completeTime > 0.0)
+		{
+			var elapsedFinished:Float = renderLogoFadeOut(elapsed);
+			// trace('Fading out logo... (' + elapsedFinished + 's)');
+			if (elapsedFinished > LOGO_FADE_TIME)
+			{
+				#if TOUCH_HERE_TO_PLAY
+				// The logo has faded out, but we're not quite done yet.
+				// In order to prevent autoplay issues, we need the user to click after the loading finishes.
+				currentState = FunkinPreloaderState.TouchHereToPlay;
+				#else
+				immediatelyStartGame();
+				#end
+			}
+		}
+		else
+		{
+			renderLogoFadeIn(elapsed);
+
+			// Render progress bar
+			var maxWidth = this._width - BAR_PADDING * 2;
+			// var barWidth = maxWidth * percent;
+			var piecesToRender:Int = Std.int(newPercent * progressBarPieces.length);
+
+			for (i => piece in progressBarPieces)
+			{
+				piece.alpha = i <= piecesToRender ? 0.9 : 0.1;
+			}
+		}
+
+		// progressBar.width = barWidth;
 
 		super.update(percent);
 	}

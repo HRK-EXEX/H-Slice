@@ -92,12 +92,7 @@ class FreeplayHelpers {
 			offset += leWeek.songs.length;
 		}
 		Sys.print("\n");
-		
-		if (!NativeFileSystem.exists('cache'))
-			NativeFileSystem.createDirectory('cache');
-
-		File.saveContent("cache/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
-
+		File.saveContent(StorageUtil.getStorageDirectory()+"/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
         return songs;
     }
 

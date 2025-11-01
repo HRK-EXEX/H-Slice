@@ -7,6 +7,7 @@ class SustainSplash extends FlxSprite
 {
 	public static var startCrochet:Float;
 	public static var frameRate:Int;
+	private static var noShader:Bool = false;
 	
 	public var holding:Bool = false;
 	public var note:Note;
@@ -26,10 +27,22 @@ class SustainSplash extends FlxSprite
 		rnd = new FlxRandom();
 
 		frames = Paths.getSparrowAtlas('holdCovers/holdCover-' + ClientPrefs.data.holdSkin);
+		noShader = ClientPrefs.data.holdSkin.toLowerCase().contains('classic') || ClientPrefs.data.noteShaders;
 
-		animation.addByPrefix('hold', 'holdCover0', 24, true);
-		animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
-		if(!animation.getNameList().contains("hold")) trace("Hold splash is missing 'hold' anim!");
+		if (noShader) {
+			for (i => str in Note.colArray) {
+				var pascalCase = str.substr(0,1).toUpperCase() + str.substr(1).toLowerCase();
+				animation.addByPrefix('hold$i', 'holdCover${pascalCase}0', 24, true);
+				animation.addByPrefix('end$i', 'holdCoverEnd${pascalCase}0', 24, false);
+				animation.addByPrefix('start$i', 'holdCoverStart${pascalCase}0', 24, false);
+			}
+		} else {
+			animation.addByPrefix('hold', 'holdCover0', 24, true);
+			animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
+			animation.addByPrefix('start', 'holdCoverStart0', 24, false);
+		}
+
+		if(!noShader && !animation.getNameList().contains("hold")) trace("Hold splash is missing 'hold' anim!");
 	}
 
 	override function update(elapsed)
@@ -58,11 +71,16 @@ class SustainSplash extends FlxSprite
 
 			if (note.strum != null) setPosition(note.strum.x, note.strum.y);
 
-			animation.play('hold', true, false, 0);
+			animation.play('start${noShader ? Std.string(note.noteData) : ''}', true, false, 0);
+
 			if (animation.curAnim != null)
 			{
 				animation.curAnim.frameRate = frameRate;
-				animation.curAnim.looped = true;
+				animation.curAnim.looped = false;
+				animation.finishCallback = a -> {
+					animation.play('hold${noShader ? Std.string(note.noteData) : ''}', true, false, 0);
+					animation.curAnim.looped = true;
+				};
 			}
 
 			clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
@@ -83,20 +101,16 @@ class SustainSplash extends FlxSprite
 		}
 	}
 
-	public function sendSustainEnd(anim:Bool = true) {
-		if (holding) showEndSplash(anim);
-	}
-
 	public function isTimerWorking() {
 		return timer.active;
 	}
 
-	function showEndSplash(anim:Bool) {
+	public function showEndSplash(anim:Bool = true) {
 		holding = false;
-		if (anim && animation != null)
+		if (anim && animation != null && note != null)
 		{
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note.strum.alpha);
-			animation.play('end', true, false, 0);
+			animation.play('end${noShader ? Std.string(note.noteData) : ''}', true, false, 0);
 			animation.curAnim.looped = false;
 			animation.curAnim.frameRate = rnd.int(22, 26);
 			clipRect = null;

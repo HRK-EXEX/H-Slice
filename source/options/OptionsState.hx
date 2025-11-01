@@ -172,7 +172,6 @@ class OptionsState extends MusicBeatState
 		add(button);
 		#end
 		
-		FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
 		super.create();
 	}
 

@@ -302,21 +302,6 @@ class CoolUtil
 		return defined;
 	}
 
-	public static function charAppearanceCnt(str:String, target:String):Int {
-		var cnt:Int = 0;
-		if (target == null || target.length == 0) return 0;
-		for (i in 0...str.length) {
-			if (target.length == 1) {
-				if (str.charAt(i) == target) ++cnt;
-			} else {
-				for (j in 0...target.length) {
-					if (str.charAt(i) == target.charAt(j)) ++cnt;
-				}
-			}
-		}
-		return cnt;
-	}
-
 	public static function searchFromStrings(target:String, strings:Array<String>):Bool {
 		var result = false;
 		for (s in strings) {

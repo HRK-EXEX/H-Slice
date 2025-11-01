@@ -1,5 +1,7 @@
+Classic
 Diamond
 Electric
 Sparkles
-Vanilla
 None
+Vanilla
+VanillaClassic

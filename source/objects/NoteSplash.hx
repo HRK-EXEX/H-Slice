@@ -32,11 +32,11 @@ typedef NoteSplashConfig = {
 class NoteSplash extends FlxSprite
 {
 	public var rgbShader:PixelSplashShaderRef;
-	public var texture:String;
+	public var texture:String = "";
 	public var config(default, set):NoteSplashConfig;
 	public var babyArrow:StrumNote;
 	public var noteData:Int = 0;
-	private var noteAnim:Int = 0;
+	private var animId:Int = 0;
 
 	public var copyX:Bool = true;
 	public var copyY:Bool = true;
@@ -210,7 +210,6 @@ class NoteSplash extends FlxSprite
 		{
 			var anims:Int = 0;
 			var datas:Int = 0;
-			var animArray:Array<Int> = [];
 
 			while (true)
 			{
@@ -222,22 +221,11 @@ class NoteSplash extends FlxSprite
 				anims++;
 			}
 
-			if (anims > 1)
-			{
-				for (i in 0...anims)
-				{
-					var data = noteData % Note.colArray.length + (i * Note.colArray.length);
-					if (!animArray.contains(data))
-						animArray.push(data);
-				}
-			}
-
-			if (animArray.length > 1)
-				noteAnim = animArray[FlxG.random.int(0, animArray.length - 1)];
+			animId = anims > 1 ? FlxG.random.int(0, anims - 1) : 0;
 		}
 
 		this.noteData = noteData;
-		var anim:String = playDefaultAnim();
+		var anim:String = playDefaultAnim(noteData % Note.colArray.length + animId * Note.colArray.length);
 		
 		if (note != null) {
 			alpha = note.noteSplashData.a - (1 - note.strum.alpha);
@@ -344,9 +332,10 @@ class NoteSplash extends FlxSprite
 		}
 	}
 	
-	public function playDefaultAnim()
+	public function playDefaultAnim(noteAnim:Int = 0)
 	{
 		var animation:String = noteDataMap.get(noteAnim);
+		// trace(animation);
 		if (animation != null && this.animation.exists(animation))
 			this.animation.play(animation, true);
 		else kill();

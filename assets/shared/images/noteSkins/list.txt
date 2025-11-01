@@ -1,2 +1,5 @@
+Classic
 Future
 Chip
+HRK
+HRK_Classic

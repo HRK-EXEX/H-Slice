@@ -1,5 +1,6 @@
 package mikolka.vslice.ui.title;
 
+import hrk.Eseq;
 import mikolka.vslice.components.crash.Logger;
 import haxe.Timer;
 import backend.WeekData;

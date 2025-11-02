@@ -292,7 +292,7 @@ class FreeplayState extends MusicBeatState
 		while (loading < songs.length) {
 			loadSong(loading++);
 			delayTime = Timer.stamp() - stampTime;
-			if (delayTime > 1 / Math.max(ClientPrefs.data.framerate, 30) || loading >= songs.length) {
+			if (delayTime > 1 / Math.min(ClientPrefs.data.framerate, 30) || loading >= songs.length) {
 				var curr = "", total = "", prog = CoolUtil.floatToStringPrecision(loading * 100.0 / songs.length, 1);
 
 				if (ClientPrefs.data.numberFormat) {
@@ -302,9 +302,9 @@ class FreeplayState extends MusicBeatState
 					curr = Std.string(loading); total = Std.string(songs.length);
 				}
 
-				Eseq.p('Loading Song - $curr / $total - $prog % Done');
+				Eseq.p('Loading Songs - $curr / $total - $prog %');
 				
-				loadingText.text = 'Loading Song...\n$curr / $total - $prog % Done';
+				loadingText.text = 'Loading Songs...\n$curr / $total - $prog %';
 				loadingText.screenCenter();
 
 				stampTime = Timer.stamp();

@@ -3119,10 +3119,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var maxTime:Float;
 	var nextMinTime:Float;
 	var nextMaxTime:Float;
-	var firstNote:Bool = false;
-	var firstEvent:Bool = false;
+	var firstNote = false;
+	var firstEvent = false;
 
-	function softReloadNotes(onlyCurrent:Bool = false)
+	var inRange = false;
+
+	function softReloadNotes(onlyCurrent = false)
 	{
 		index = 0;
 		if (!onlyCurrent)
@@ -3135,6 +3137,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		{
 			return (minTime <= t && t < maxTime);
 		}
+		trace(minTime, maxTime);
 
 		firstNote = false;
 		firstEvent = false;
@@ -3143,16 +3146,16 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		for (cursed => sections in curSong.notes)
 		{
-			if (sections.sectionNotes == null || sections.sectionNotes.length == 0)
-				continue;
-			trace(minTime, sections.sectionNotes[0][0], maxTime);
-			if (!curSecFilter(sections.sectionNotes[0][0]))
+			if (sections.sectionNotes == null || sections.sectionNotes.length == 0) continue;
+			inRange = curSecFilter(sections.sectionNotes[0][0]);
+			trace('section ${cursed+1}: ${sections.sectionNotes[0]} isCurrent: $inRange');
+			if (!inRange)
 			{
 				if (sections.sectionNotes[0][0] >= maxTime) break;
 				index += curSong.notes.length;
 				continue;
 			}
-			// trace('current section ${cursed+1}: ${sections.sectionNotes[0]}');
+
 			for (note in sections.sectionNotes)
 			{
 				if (note != null)
@@ -3266,7 +3269,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	function getMinNoteTime(sec:Int)
 	{
-		minTime = Math.NEGATIVE_INFINITY;
+		minTime = 0;
 		if (sec > 0)
 			minTime = cachedSectionTimes[sec];
 		return minTime;

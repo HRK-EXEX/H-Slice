@@ -15,7 +15,7 @@ class MainMenuState extends MusicBeatState
 	#end
 	public static var pSliceVersion:String = '3.3.1';
 	public static var funkinVersion:String = '0.7.4'; // Version of funkin' we are emulationg
-	public static var hrkVersion:String = '0.2.3'; // Version of H-Slice
+	public static var hrkVersion:String = '0.2.2'; // Version of H-Slice
 	public static var curSelected:Int = 0;
 
 	var menuItems:FlxTypedGroup<FlxSprite>;

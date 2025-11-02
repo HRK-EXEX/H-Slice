@@ -312,10 +312,10 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxeflag name="--macro" value="addMetadata('@:build(mikolka.FlxMacro.buildFlxBasic())', 'flixel.FlxBasic')" />
 
 	<!-- more verbose HScript-->
-	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED"/>
+	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
 
 	<!-- what is this -->
-	<define name="DISABLE_CHART_EDITOR">
+	<define name="DISABLE_CHART_EDITOR" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 

@@ -114,7 +114,7 @@ class Popup extends FlxSprite {
     }
 
     override function update(elapsed:Float) {
-        elapsed /= i.playbackRate;
+        // elapsed /= i.playbackRate;
         time += elapsed;
         if (ay != 0) vy += ay * elapsed;
         if (vx != 0) x += vx * elapsed;

@@ -301,9 +301,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
 
 		FlxG.timeScale = 1;
-		var pitch = FlxG.random.bool() ? 0.2 : 1;
-		for (i in 0...(16 / FlxG.random.int(1, 16)))
-			FlxG.sound.play(Paths.sound('jumpscare'), 1).time = new FlxRandom().float(0, 5000);
+		for (i in 0...Std.int(16 / FlxG.random.int(1, 16))) {
+			var playback = FlxG.random.bool(10) ? 0.2 : 1;
+			var earrape = FlxG.sound.play(Paths.sound('jumpscare'), 1);
+			earrape.time = FlxG.random.float(0, 5000);
+			earrape.pitch = playback;
+		}
 		Timer.delay(() -> openfl.Lib.application.window.close(), 1000);
 
 		initPsychCamera();

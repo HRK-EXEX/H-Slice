@@ -1178,10 +1178,8 @@ class PlayState extends MusicBeatState
 		if (foundFile)
 		{
 			videoCutscene = new VideoSprite(fileName, forMidSong, canSkip, loop);
-			if(forMidSong) videoCutscene.videoSprite.bitmap.rate = playbackRate;
-
-			// Finish callback
-			if (!forMidSong)
+			if (forMidSong) videoCutscene.videoSprite.bitmap.rate = playbackRate;
+			else // Finish callback
 			{
 				function onVideoEnd()
 				{
@@ -1620,6 +1618,7 @@ class PlayState extends MusicBeatState
 
 			FlxG.sound.music.time = time - Conductor.offset;
 			#if FLX_PITCH FlxG.sound.music.pitch = playbackRate; #end
+			// trace('songTime sets to $time');
 			FlxG.sound.music.play();
 			FlxG.sound.music.volume = mute ? 0 : ClientPrefs.data.bgmVolume;
 			FlxG.sound.music.onComplete = finishSong.bind();
@@ -1686,8 +1685,7 @@ class PlayState extends MusicBeatState
 			if (opVocal) {opponentVocals.play(); opponentVocals.volume = 0;}
 		}
 
-		setSongTime(Math.max(0, startOnTime - 500) + Conductor.offset);
-		if (startOnTime > 0) setSongTime(startOnTime);
+		if (startOnTime > 0) setSongTime(Math.max(0, startOnTime - 500) + Conductor.offset);
 		startOnTime = 0;
 
 		if (paused)
@@ -1779,7 +1777,7 @@ class PlayState extends MusicBeatState
 		if (bfVocal) FlxG.sound.list.add(vocals);
 		if (opVocal) FlxG.sound.list.add(opponentVocals);
 
-		inst = new FlxSound(); #if debug trace('Alt inst: ${altInstrumentals ?? "None"}'); #end
+		inst = new FlxSound(); trace('Alt inst: ${altInstrumentals ?? "None"}');
 		try inst.loadEmbedded(Paths.inst(altInstrumentals ?? SONG.song)) catch (e:Dynamic) {}
 		FlxG.sound.list.add(inst);
 
@@ -2103,7 +2101,7 @@ class PlayState extends MusicBeatState
 
 	override function openSubState(SubState:FlxSubState)
 	{
-		stagesFunc(function(stage:BaseStage) stage.openSubState(SubState));
+		stagesFunc(stage -> stage.openSubState(SubState));
 		if (paused)
 		{
 			if (FlxG.sound.music != null)
@@ -2112,10 +2110,8 @@ class PlayState extends MusicBeatState
 				if (bfVocal) vocals.pause();
 				if (opVocal) opponentVocals.pause();
 			}
-			FlxTimer.globalManager.forEach(function(tmr:FlxTimer) if (!tmr.finished)
-				tmr.active = false);
-			FlxTween.globalManager.forEach(function(twn:FlxTween) if (!twn.finished)
-				twn.active = false);
+			FlxTimer.globalManager.forEach(tmr -> if (!tmr.finished) tmr.active = false);
+			FlxTween.globalManager.forEach(twn -> if (!twn.finished) twn.active = false);
 		}
 
 		super.openSubState(SubState);
@@ -2125,12 +2121,18 @@ class PlayState extends MusicBeatState
 	{
 		super.closeSubState();
 
-		stagesFunc(function(stage:BaseStage) stage.closeSubState());
+		stagesFunc(stage -> stage.closeSubState());
 		if (paused)
 		{
-			if (!ffmpegMode && FlxG.sound.music != null && !startingSong && canResync)
+			// if (!ffmpegMode && FlxG.sound.music != null && !startingSong && !endingSong && canResync)
+			// {
+			// 	resyncVocals();
+			// }
+			if (FlxG.sound.music != null)
 			{
-				resyncVocals();
+				FlxG.sound.music.resume();
+				if (bfVocal) vocals.resume();
+				if (opVocal) opponentVocals.resume();
 			}
 			FlxTimer.globalManager.forEach(tmr -> if (!tmr.finished) tmr.active = true);
 			FlxTween.globalManager.forEach(twn -> if (!twn.finished) twn.active = true);
@@ -2206,7 +2208,7 @@ class PlayState extends MusicBeatState
 			return;
 
 		desyncCount++;
-		#if debug trace('resynced vocals at ' + Math.floor(Conductor.songPosition)); #end
+		// trace('resynced vocals at ' + Math.floor(Conductor.songPosition));
 
 		FlxG.sound.music.play();
 		if (!ffmpegMode && FlxG.sound.music.volume == 0) {
@@ -2461,7 +2463,7 @@ class PlayState extends MusicBeatState
 		}
 		if (!practiceMode) doDeathCheck();
 
-		if (!ffmpegMode && started && !paused && canResync)
+		if (!ffmpegMode && !startingSong && !endingSong && !paused && canResync)
 			checkSync();
 
 		/* --- main process --- */
@@ -4596,10 +4598,10 @@ class PlayState extends MusicBeatState
 			spr.playAnim('static');
 			spr.resetAnim = 0;
 
-			// if (enableHoldSplash) {
-			// 	var susplash = grpHoldSplashes.members[key];
-			// 	if (susplash != null && susplash.isTimerWorking()) susplash.showEndSplash();
-			// }
+			if (enableHoldSplash) {
+				var susplash = grpHoldSplashes.members[key+4];
+				if (susplash != null && !susplash.ending) susplash.showEndSplash(susplash.isTimerWorking());
+			}
 		}
 		callOnScripts('onKeyRelease', [key]);
 	}
@@ -5051,17 +5053,13 @@ class PlayState extends MusicBeatState
 
 	public function spawnHoldSplash(note:Note) {
 		if (note == null || note.strum == null) return;
-		var susplashIndex:Int = (note.mustPress ? 4 : 0) + note.noteData;
+		var susplashIndex = (note.mustPress ? 4 : 0) + note.noteData;
 		var susplash = susplashMap[susplashIndex];
 		var isUsedSplash = susplash.holding;
 
 		if (!isUsedSplash || isUsedSplash && note.isSustainEnds) {
 			var holdSplashStrum = note.mustPress ? playerStrums.members[note.noteData] : opponentStrums.members[note.noteData];
 			if (note.strum != splashStrum) note.strum = holdSplashStrum;
-			
-			if (note.isSustainEnds) {
-				SustainSplash.startCrochet = Conductor.stepCrochet - (Conductor.songPosition - note.strumTime);
-			}
 
 			susplash.setupSusSplash(note, playbackRate);
 			

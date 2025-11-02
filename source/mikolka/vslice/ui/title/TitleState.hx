@@ -63,7 +63,7 @@ class TitleState extends MusicBeatState
 		Paths.clearUnusedMemory();
 
 		try {
-			Eseq.p('Console Available!');
+			Eseq.p('Console Available!\n');
 		} catch (e) {
 			Eseq.available = false;
 		}

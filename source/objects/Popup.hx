@@ -109,16 +109,22 @@ class Popup extends FlxSprite {
         antialiasing = i.antialias;
         setGraphicSize(Std.int(width * (PlayState.isPixelStage ? 0.7 * PlayState.daPixelZoom : 0.55)));
         updateHitbox();
+        
+        delay = 1.125 / i.playbackRate;
     }
 
-    public function comboOtherStuff() {
-        tween = FlxTween.tween(this, {alpha: 0}, 0.2 / i.playbackRate, {
-            onComplete: tween -> {
-                kill();
-                tween = null;
-            },
-            startDelay: 1.125 / i.playbackRate
-        });
+    override function update(elapsed:Float) {
+        // elapsed /= i.playbackRate;
+        time += elapsed;
+        if (ay != 0) vy += ay * elapsed;
+        if (vx != 0) x += vx * elapsed;
+        if (vy != 0) y += vy * elapsed;
+        
+        if (time > delay) {
+            alpha -= elapsed * 5;
+            if (alpha <= 0) kill();
+        }
+        // super.update(elapsed);
     }
 
     override public function kill() {

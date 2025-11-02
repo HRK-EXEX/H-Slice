@@ -1,5 +1,7 @@
 package states.stages;
 
+import objects.Note;
+
 
 
 class Template extends BaseStage

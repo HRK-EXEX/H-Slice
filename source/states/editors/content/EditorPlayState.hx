@@ -120,7 +120,6 @@ class EditorPlayState extends MusicBeatSubstate
 		grpNoteSplashes.add(splash);
 		splash.alpha = 0.000001; //cant make it invisible or it won't allow precaching
 
-		SustainSplash.startCrochet = Conductor.stepCrochet;
 		SustainSplash.frameRate = Math.floor(24 / 100 * PlayState.SONG.bpm);
 		var holdSplash:SustainSplash = new SustainSplash();
 		holdSplash.alpha = 0.0001;

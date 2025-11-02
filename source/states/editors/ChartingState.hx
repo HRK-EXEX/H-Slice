@@ -87,7 +87,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			'Philly Glow',
 			"Exclusive to Week 3\nValue 1: 0/1/2 = OFF/ON/Reset Gradient\n \nNo, i won't add it to other weeks."
 		],
-		['Kill Henchmen', "For Mom's songs, don't use this please, i love them :("],
+		[
+			'Kill Henchmen',
+			"For Mom's songs, don't use this please, i love them :("
+		],
 		[
 			'Add Camera Zoom',
 			"Used on MILF on that one \"hard\" part\nValue 1: Camera zoom add (Default: 0.015)\nValue 2: UI zoom add (Default: 0.03)\nLeave the values blank if you want to use Default."
@@ -298,9 +301,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
 
 		FlxG.timeScale = 1;
-		var pitch = FlxG.random.bool() ? 0.2 : 1;
-		for (i in 0...(16 / FlxG.random.int(1, 16)))
-			FlxG.sound.play(Paths.sound('jumpscare'), 1).time = new FlxRandom().float(0, 5000);
+		for (i in 0...Std.int(16 / FlxG.random.int(1, 16))) {
+			var playback = FlxG.random.bool(10) ? 0.2 : 1;
+			var earrape = FlxG.sound.play(Paths.sound('jumpscare'), 1);
+			earrape.time = FlxG.random.float(0, 5000);
+			earrape.pitch = playback;
+		}
 		Timer.delay(() -> openfl.Lib.application.window.close(), 1000);
 
 		initPsychCamera();
@@ -320,11 +326,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		#else
 		PlayState.chartingMode = true;
 
-		for (zoom in zoomList)
-		{
-			if (zoom >= 4)
-				quantizations.push(Std.int(zoom));
-		}
+		quantizations = [for (zoom in zoomList) if (zoom >= 1.5) Std.int(zoom)];
 
 		if (Difficulty.list.length < 1)
 			Difficulty.resetList();
@@ -1511,17 +1513,17 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				if (FlxG.keys.justPressed.LEFT != FlxG.keys.justPressed.RIGHT) // Lower/Higher quant
 				{
 					if (FlxG.keys.justPressed.LEFT)
-						curQuant = quantizations[Std.int(Math.max(quantizations.indexOf(curQuant) - 1, 0))];
+						curQuant = quantizations[FlxMath.maxInt(quantizations.indexOf(curQuant) - 1, 0)];
 					else
-						curQuant = quantizations[Std.int(Math.min(quantizations.indexOf(curQuant) + 1, quantizations.length - 1))];
+						curQuant = quantizations[FlxMath.minInt(quantizations.indexOf(curQuant) + 1, quantizations.length - 1)];
 					forceDataUpdate = true;
 				}
 				else if (justPressed_Z != justPressed_X) // Decrease/Increase Zoom
 				{
 					if (justPressed_Z)
-						curZoom = zoomList[Std.int(Math.max(zoomList.indexOf(curZoom) - 1, 0))];
+						curZoom = zoomList[FlxMath.maxInt(zoomList.indexOf(curZoom) - 1, 0)];
 					else if (FlxG.keys.justPressed.X || (FlxG.keys.pressed.CONTROL && FlxG.mouse.wheel > 0))
-						curZoom = zoomList[Std.int(Math.min(zoomList.indexOf(curZoom) + 1, zoomList.length - 1))];
+						curZoom = zoomList[FlxMath.minInt(zoomList.indexOf(curZoom) + 1, zoomList.length - 1)];
 
 					curSong.notes[curSec].sectionNotes.sort(sortByStrumTime);
 					noteSec = 0;
@@ -1668,7 +1670,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					if (isMovingNotes)
 					{
 						// Move note data
-						var nData:Int = Std.int(Math.max(0, noteData));
+						var nData:Int = FlxMath.maxInt(0, noteData);
 						if (movingNotesLastData != nData)
 						{
 							var isFirst:Bool = true;
@@ -1852,7 +1854,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 										strumTime,
 										[
 											[
-												eventsList[Std.int(Math.max(eventDropDown.selectedIndex, 0))][0],
+												eventsList[FlxMath.maxInt(eventDropDown.selectedIndex, 0)][0],
 												value1InputText.text,
 												value2InputText.text
 											]
@@ -1981,7 +1983,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				if (isMovingNotes)
 				{
 					// Move note data
-					var nData:Int = Std.int(Math.max(0, noteData));
+					var nData:Int = FlxMath.maxInt(0, noteData);
 					if (movingNotesLastData != nData)
 					{
 						var isFirst:Bool = true;
@@ -2169,7 +2171,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 									strumTime,
 									[
 										[
-											eventsList[Std.int(Math.max(eventDropDown.selectedIndex, 0))][0],
+											eventsList[FlxMath.maxInt(eventDropDown.selectedIndex, 0)][0],
 											value1InputText.text,
 											value2InputText.text
 										]
@@ -2571,7 +2573,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				strumTimeStepper.value = metaNote.strumTime;
 
 				susLengthLastVal = susLengthStepper.value = metaNote.sustainLength;
-				noteTypeDropDown.selectedIndex = Std.int(Math.max(0, noteTypes.indexOf(metaNote.noteType)));
+				noteTypeDropDown.selectedIndex = FlxMath.maxInt(0, noteTypes.indexOf(metaNote.noteType));
 			}
 			else
 			{
@@ -3120,10 +3122,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var maxTime:Float;
 	var nextMinTime:Float;
 	var nextMaxTime:Float;
-	var firstNote:Bool = false;
-	var firstEvent:Bool = false;
+	var firstNote = false;
+	var firstEvent = false;
 
-	function softReloadNotes(onlyCurrent:Bool = false)
+	var inRange = false;
+
+	function softReloadNotes(onlyCurrent = false)
 	{
 		index = 0;
 		if (!onlyCurrent)
@@ -3136,6 +3140,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		{
 			return (minTime <= t && t < maxTime);
 		}
+		trace(minTime, maxTime);
 
 		firstNote = false;
 		firstEvent = false;
@@ -3144,17 +3149,16 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		for (cursed => sections in curSong.notes)
 		{
-			if (sections.sectionNotes == null || sections.sectionNotes.length == 0)
-				continue;
-			trace(minTime, sections.sectionNotes[0][0], maxTime);
-			if (!curSecFilter(sections.sectionNotes[0][0]))
+			if (sections.sectionNotes == null || sections.sectionNotes.length == 0) continue;
+			inRange = curSecFilter(sections.sectionNotes[0][0]);
+			trace('section ${cursed+1}: ${sections.sectionNotes[0]} isCurrent: $inRange');
+			if (!inRange)
 			{
-				if (sections.sectionNotes[0][0] >= maxTime)
-					break;
+				if (sections.sectionNotes[0][0] >= maxTime) break;
 				index += curSong.notes.length;
 				continue;
 			}
-			// trace('current section ${cursed+1}: ${sections.sectionNotes[0]}');
+
 			for (note in sections.sectionNotes)
 			{
 				if (note != null)
@@ -3268,7 +3272,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	function getMinNoteTime(sec:Int)
 	{
-		minTime = Math.NEGATIVE_INFINITY;
+		minTime = 0;
 		if (sec > 0)
 			minTime = cachedSectionTimes[sec];
 		return minTime;
@@ -3651,7 +3655,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			genericEventButton(function(event:EventMetaNote)
 			{
 				event.events.push([
-					eventsList[Std.int(Math.max(eventDropDown.selectedIndex, 0))][0],
+					eventsList[FlxMath.maxInt(eventDropDown.selectedIndex, 0)][0],
 					value1InputText.text,
 					value2InputText.text
 				]);
@@ -4567,6 +4571,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		chk_allowNew = new PsychUICheckBox(180,30,"Show \"new\" tag");
 		chk_hasErect = new PsychUICheckBox(180,200,"Has erect variant");
 		
+		txt_weekName = new PsychUIInputText(180,200,100,"");
 		txt_altInstSong = new PsychUIInputText(20,160,250,"",8);
 
 		exportMetadataBtn = new PsychUIButton(20, 200, "Export metadata", onMetadataSaveClick.bind(), 110);
@@ -4721,7 +4726,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			}
 
 			fileList.sort((a:String, b:String) -> (a.toUpperCase() < b.toUpperCase()) ? 1 : -1); // Sort alphabetically descending
-			var maxItems:Int = Std.int(Math.min(5, fileList.length));
+			var maxItems:Int = FlxMath.minInt(5, fileList.length);
 			var radioGrp:PsychUIRadioGroup = new PsychUIRadioGroup(0, 0, fileList, 25, maxItems, false, 240);
 			radioGrp.checked = 0;
 

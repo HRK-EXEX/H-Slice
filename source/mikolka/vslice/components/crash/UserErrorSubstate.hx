@@ -138,7 +138,8 @@ class UserErrorSubstate extends MusicBeatSubstate
     public inline static function getLogger():String
 	{
 		return switch(VsliceOptions.LOGGING){
-			case "Console & File", "File": "Logs available in the 'latest.log' file";
+			case "Console & File": "Logs available in the 'latest.log' file or check the console for logs";
+			case "File": "Logs available in the 'latest.log' file";
 			case "Console": "Check the console for logs";
 			case "None": "Logs disabled!";
 			default: "Is the logger corrupted???";

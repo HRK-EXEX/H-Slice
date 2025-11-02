@@ -6,7 +6,6 @@ import flixel.input.keyboard.FlxKey;
 import mikolka.vslice.ui.disclaimer.TextWarnings.FlashingState;
 import mikolka.vslice.ui.disclaimer.TextWarnings.OutdatedState;
 import mikolka.vslice.components.ScreenshotPlugin;
-
 #if android
 import mikolka.vslice.ui.disclaimer.WarningState;
 import haxe.io.Path;
@@ -14,13 +13,13 @@ import haxe.io.Path;
 
 class InitState extends MusicBeatState
 {
-    public static var muteKeys:Array<FlxKey> = [FlxKey.ZERO];
+	public static var muteKeys:Array<FlxKey> = [FlxKey.ZERO];
 	public static var volumeDownKeys:Array<FlxKey> = [FlxKey.NUMPADMINUS, FlxKey.MINUS];
 	public static var volumeUpKeys:Array<FlxKey> = [FlxKey.NUMPADPLUS, FlxKey.PLUS];
 
-    var mustUpdate:Bool = false;
-	public static var updateVersion:String = '';
+	var mustUpdate:Bool = false;
 
+	public static var updateVersion:String = '';
 
 	override function create()
 	{
@@ -29,7 +28,6 @@ class InitState extends MusicBeatState
 		persistentUpdate = true;
 		persistentDraw = true;
 		FlxG.mouse.visible = false;
-
 
 		#if (cpp && windows)
 		trace("Fixing DPI aware:");
@@ -56,44 +54,50 @@ class InitState extends MusicBeatState
 		{
 			StoryMenuState.weekCompleted = FlxG.save.data.weekCompleted;
 		}
-		
 		#if TOUCH_CONTROLS_ALLOWED
 		trace("Loading mobile data");
 		MobileData.init();
 		#end
 
-		FlxG.scaleMode = new MobileScaleMode(ClientPrefs.data.wideScreen); 
-		
+		FlxG.scaleMode = new MobileScaleMode(ClientPrefs.data.wideScreen);
+
 		trace("Init plugins:");
 		//* FIRST INIT! iNITIALISE IMPORTED PLUGINS
 		ScreenshotPlugin.initialize();
 		#if android
 		//* This is only for the 3.3 version
-		var path = Path.join([lime.system.System.applicationStorageDirectory,backend.CoolUtil.getSavePath(),"funkin.sol"]);
-		var exportPath = Path.join([mobile.backend.StorageUtil.StorageType.fromStr("EXTERNAL"),"funkin.sol"]);
-		#if !OLD_SIGN_KEYS
-		if(FileSystem.exists(exportPath) && FlxG.save.data.flashing == null){
-			var txt = "Migration save data found!!!\n\n"+
-			"Press A to import it\n";
-			MusicBeatState.switchState(new WarningState(txt,() ->{
-				FlxG.save.close();
-				File.saveContent(path,File.getContent(exportPath));
-				FileSystem.deleteFile(exportPath);
-				Sys.exit(0);
-			},null,new TitleState()));
-		}else
-		#end
+		var path = Path.join([
+			lime.system.System.applicationStorageDirectory,
+			backend.CoolUtil.getSavePath(),
+			"funkin.sol"
+		]);
+		var exportPath = Path.join([mobile.backend.StorageUtil.StorageType.fromStr("EXTERNAL"), "funkin.sol"]);
+			#if !OLD_SIGN_KEYS
+			if (FileSystem.exists(exportPath) && FlxG.save.data.flashing == null)
+			{
+				var txt = "Migration save data found!!!\n\n" + "Press A to import it\n";
+				MusicBeatState.switchState(new WarningState(txt, () ->
+				{
+					FlxG.save.close();
+					File.saveContent(path, File.getContent(exportPath));
+					FileSystem.deleteFile(exportPath);
+					Sys.exit(0);
+				}, null, new TitleState()));
+			}
+			else
+			#end
 		#end
 		if (FlxG.save.data.flashing == null)
 		{
 			#if OLD_SIGN_KEYS
-			var txt = "You are using a build with old signing keys!\n\n"
-			+ "Please download the regular android version instead!";
-			MusicBeatState.switchState(new WarningState(txt,() ->{
+			var txt = "You are using a build with old signing keys!\n\n" + "Please download the regular android version instead!";
+			MusicBeatState.switchState(new WarningState(txt, () ->
+			{
 				lime.system.System.exit(0);
-			},() ->{
-				lime.system.System.exit(0);
-			},new TitleState()));
+			}, () ->
+				{
+					lime.system.System.exit(0);
+				}, new TitleState()));
 			#else
 			controls.isInSubstate = false;
 			FlxTransitionableState.skipNextTransIn = true;
@@ -101,36 +105,37 @@ class InitState extends MusicBeatState
 			MusicBeatState.switchState(new FlashingState(new TitleState()));
 			#end
 		}
-        #if (CHECK_FOR_UPDATES && !OLD_SIGN_KEYS)
-        else if (mustUpdate){
-            MusicBeatState.switchState(new OutdatedState(updateVersion,new TitleState()));
-        }
-        #end
+		#if (CHECK_FOR_UPDATES && !OLD_SIGN_KEYS)
+		else if (mustUpdate)
+		{
+			MusicBeatState.switchState(new OutdatedState(updateVersion, new TitleState()));
+		}
+		#end
 		else
 		{
 			#if OLD_SIGN_KEYS
 			var txt = "You are using a build with the old signing keys!\n"
-			+ "P-Slice will use the new signing keys for the future versions.\n"+
-			"Use migration guide to move over your data\nto the new build of P-Slice\n\n"+
-			"Press A to export your save data and open the migration guide\n"+
-			"Press B to ignore"
-			;
-			MusicBeatState.switchState(new WarningState(txt,() ->{
-				File.copy(path,exportPath);
-				File.copy(path,exportPath+".bak");
+				+ "P-Slice will use the new signing keys for the future versions.\n"
+				+ "Use migration guide to move over your data\nto the new build of P-Slice\n\n"
+				+ "Press A to export your save data and open the migration guide\n"
+				+ "Press B to ignore";
+			MusicBeatState.switchState(new WarningState(txt, () ->
+			{
+				File.copy(path, exportPath);
+				File.copy(path, exportPath + ".bak");
 				CoolUtil.browserLoad("https://github.com/Psych-Slice/P-Slice/wiki/P%E2%80%90Slice-port-migration#you-should-land-here-after-doing-that");
-			},null,new TitleState()));
+			}, null, new TitleState()));
 			#else
 			new FlxTimer().start(0.05, function(tmr:FlxTimer)
-				{
-					#if FREEPLAY
-					MusicBeatState.switchState(new FreeplayState());
-					#elseif CHARTING
-					MusicBeatState.switchState(new ChartingState());
-					#else
-					MusicBeatState.switchState(new TitleState());
-					#end
-				});
+			{
+				#if FREEPLAY
+				MusicBeatState.switchState(new FreeplayState());
+				#elseif CHARTING
+				MusicBeatState.switchState(new ChartingState());
+				#else
+				MusicBeatState.switchState(new TitleState());
+				#end
+			});
 			#end
 		}
 	}
@@ -141,17 +146,36 @@ class InitState extends MusicBeatState
 		if (ClientPrefs.data.checkForUpdates)
 		{
 			trace('checking for update');
-			var http = new haxe.Http("https://raw.githubusercontent.com/mikolka9144/P-Slice/master/gitVersion.txt");
+			var http = new haxe.Http("https://raw.githubusercontent.com/HRK-EXEX/H-Slice/master/gitVersion.txt");
 
-			http.onData = function(data:String)
+			http.onData = data ->
 			{
 				updateVersion = data.split('\n')[0].trim();
-				var curVersion:String = MainMenuState.pSliceVersion.trim();
-				trace('version online: ' + updateVersion + ', your version: ' + curVersion);
-				if (updateVersion != curVersion)
+				var curVersion:String = MainMenuState.hrkVersion.trim();
+
+				trace('version online: $updateVersion, your version: $curVersion');
+
+				var oldVer = curVersion.split('.');
+				var newVer = updateVersion.split('.');
+
+				var oInt = 0, nInt = 0;
+
+				mustUpdate = oldVer.length < newVer.length;
+				if (!mustUpdate) {
+					for (i in 0...newVer.length) {
+						oInt = Std.parseInt(oldVer[i]);
+						nInt = Std.parseInt(newVer[i]);
+
+						if (oInt < nInt) {
+							mustUpdate = true;
+							break;
+						}
+					}
+				}
+
+				if (mustUpdate)
 				{
-					trace('versions arent matching!');
-					mustUpdate = true;
+					trace("versions aren't matching!");
 				}
 			}
 

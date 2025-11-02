@@ -1,7 +1,6 @@
 package options;
 
 import objects.HealthIcon;
-import mobile.backend.MobileScaleMode;
 import objects.Note;
 import objects.StrumNote;
 import objects.NoteSplash;
@@ -43,13 +42,13 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			notes.add(note);
 			
 			var splash:NoteSplash = new NoteSplash();
-			splash.noteData = i;
-			splash.setPosition(note.x, noteY);
+			splash.babyArrow = note;
 			splash.loadSplash();
-			splash.visible = false;
+			splash.visible = true;
 			splash.alpha = ClientPrefs.data.splashAlpha;
-			splash.animation.finishCallback = name -> splash.visible = false;
+			splash.animation.finishCallback = name -> splash.kill();
 			splash.rgbShader.enabled = ClientPrefs.data.noteShaders;
+			splash.kill();
 			splashes.add(splash);
 			
 			if (splash.rgbShader.enabled) {
@@ -366,10 +365,13 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		add(bfIcon);
 	}
 
-	override function changeSelection(change:Int = 0)
+	var lastSelected:Int = -1;
+	override function changeSelection(change:Float,usePrecision:Bool = false)
 	{
-		super.changeSelection(change);
-		
+		super.changeSelection(change,usePrecision);
+		if(lastSelected == curSelected) return;
+		else lastSelected = curSelected;
+
 		switch(curOption.variable)
 		{
 			case 'noteSkin', 'splashSkin', 'splashAlpha', 'splashCount':
@@ -520,10 +522,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		if (splashes.members[0] != null && splashes.members[0].maxAnims > 1)
 			rand = FlxG.random.int(0, splashes.members[0].maxAnims - 1); // For playing the same random animation on all 4 splashes
 
-		for (splash in splashes)
+		for (index => splash in splashes)
 		{
 			splash.revive();
-			var anim:String = splash.playDefaultAnim();
+			var anim:String = splash.playDefaultAnim(splash.texture.toLowerCase().contains('classic') ? index : 0);
 			var conf = splash.config.animations.get(anim);
 			var offsets:Array<Float> = [0, 0];
 

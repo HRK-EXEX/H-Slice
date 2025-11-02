@@ -6,8 +6,8 @@ class BaseGameSubState extends BaseOptionsMenu {
 	var logOption:Option;
 
     public function new() {
-        title = Language.getPhrase("vslice_menu","V-Slice settings");
-        rpcTitle = "V-Slice settings menu";
+        title = Language.getPhrase("vslice_menu","P-Slice settings");
+        rpcTitle = "P-Slice settings menu";
 
         var option:Option = new Option('Use New Freeplay State',
 			'If disabled, it uses the Freeplay State of Psych Engine instead new one.',

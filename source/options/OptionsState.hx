@@ -1,7 +1,7 @@
 package options;
 
+import mikolka.funkin.custom.mobile.MobileScaleMode;
 import mikolka.vslice.components.crash.UserErrorSubstate;
-
 import backend.StageData;
 import flixel.FlxObject;
 #if (target.threaded)
@@ -19,17 +19,18 @@ class OptionsState extends MusicBeatState
 		'Note Colors',
 		'Controls',
 		'Adjust Delay and Combo',
-		#if desktop 'Game Renderer', #end
+		#if desktop 'Video Rendering', #end
 		'Optimizations',
 		'Graphics',
 		'Visuals',
 		'Gameplay',
-		'V-Slice Options',
+		'P-Slice Options',
 		#if TRANSLATIONS_ALLOWED 'Language', #end
 		#if (TOUCH_CONTROLS_ALLOWED || mobile) 'Mobile Options' #end
 	];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
+	private static var curSelectedPartial:Float = 0;
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
 	var exiting:Bool = false;
@@ -58,7 +59,7 @@ class OptionsState extends MusicBeatState
 				else
 					openSubState(new options.ControlsSubState());
 			#if desktop
-			case 'Game Renderer':
+			case 'Video Rendering':
 				openSubState(new options.GameRendererSettingsSubState());
 			#end
 			case 'Optimizations':
@@ -71,7 +72,7 @@ class OptionsState extends MusicBeatState
 				openSubState(new options.GameplaySettingsSubState());
 			case 'Adjust Delay and Combo':
 				MusicBeatState.switchState(new options.NoteOffsetState());
-			case 'V-Slice Options':
+			case 'P-Slice Options':
 				openSubState(new BaseGameSubState());
 			#if (TOUCH_CONTROLS_ALLOWED || mobile)
 			case 'Mobile Options':
@@ -107,6 +108,7 @@ class OptionsState extends MusicBeatState
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.color = 0xFFea71fd;
+		bg.setGraphicSize(Std.int(bg.width * 1.175));
 		bg.updateHitbox();
 
 		bg.screenCenter();
@@ -154,6 +156,20 @@ class OptionsState extends MusicBeatState
 
 		#if TOUCH_CONTROLS_ALLOWED
 		addTouchPad('UP_DOWN', 'A_B');
+
+		var button = new TouchZone(90,270,FlxG.width,100,FlxColor.PURPLE);
+		
+		var scroll = new ScrollableObject(-0.01,100,0,FlxG.width-200,FlxG.height,button);
+		scroll.onPartialScroll.add(delta -> changeSelection(delta,false));
+		// scroll.onFullScroll.add(delta -> {
+		// 	FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+		// });
+        scroll.onFullScrollSnap.add(() ->changeSelection(0,true));
+		scroll.onTap.add(() ->{
+			openSelectedSubstate(options[curSelected]);
+		});
+		add(scroll);
+		add(button);
 		#end
 		
 		super.create();
@@ -177,12 +193,17 @@ class OptionsState extends MusicBeatState
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if(exiting) return;
+		if (exiting) return;
 
-		if (controls.UI_UP_P)
-			changeSelection(-1);
-		if (controls.UI_DOWN_P)
-			changeSelection(1);
+		if (controls.UI_UP_P || controls.UI_DOWN_P)
+		{
+			changeSelection(controls.UI_UP_P ? -1 : 1,true);
+		}
+
+		if (FlxG.mouse.wheel != 0)
+		{
+			changeSelection(-FlxG.mouse.wheel);
+		}
 
 		// var lerpVal:Float = Math.max(0, Math.min(1, elapsed * 7.5));
 		// camFollowPos.setPosition(635, FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
@@ -218,21 +239,27 @@ class OptionsState extends MusicBeatState
 		else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
 	}
 	
-	function changeSelection(change:Int = 0)
-	{
-		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
-
+	function changeSelection(delta:Float = 0, usePrecision:Bool = false) {
+		if(usePrecision) {
+			if(delta != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+			curSelected =  FlxMath.wrap(curSelected + Std.int(delta), 0, options.length - 1);
+			curSelectedPartial = curSelected;
+		}
+		else {
+			curSelectedPartial = FlxMath.bound(curSelectedPartial + delta, 0, options.length - 1);
+			if(curSelected != Math.round(curSelectedPartial)) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+			curSelected = Math.round(curSelectedPartial);
+		}
 		for (num => item in grpOptions.members)
 		{
-			item.targetY = num - curSelected;
+			item.targetY = num - curSelectedPartial;
 			item.alpha = 0.6;
-			if (item.targetY == 0)
+			if (num == curSelected)
 			{
 				item.alpha = 1;
 				selectorLeft.x = item.x - 140;
-				selectorLeft.y = item.y + 7;
+				selectorLeft.y = selectorRight.y = item.y + 7;
 				selectorRight.x = item.x + item.width + 35;
-				selectorRight.y = item.y + 7;
 			}
 		}
 		FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);

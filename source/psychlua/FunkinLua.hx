@@ -1,5 +1,5 @@
-#if LUA_ALLOWED
 package psychlua;
+#if LUA_ALLOWED
 
 import backend.WeekData;
 import backend.Highscore;
@@ -611,8 +611,7 @@ class FunkinLua {
 			return null;
 		});
 		
-		// Available Shaders
-		
+		// Available Shaders		
 		Lua_helper.add_callback(lua, "addGlitchEffect", function(tag:String, ?spd:Float = 2.25, ?freq:Float = 5, ?amp:Float = 0.1, ?type:String = 'FLAG') {
 			if(MusicBeatState.getVariables().exists(tag)) {
 				var shit:ModchartSprite = MusicBeatState.getVariables().get(tag);
@@ -621,7 +620,28 @@ class FunkinLua {
 					else if(type == 'DREAMY') DREAMY
 					else if(type == 'HORIZONTAL') HEAT_WAVE_HORIZONTAL
 					else if(type == 'VERTICAL') HEAT_WAVE_VERTICAL
-					else FLAG;
+					else if(type == 'FLAG') ClientPrefs.data.swapGlitchWiggle ? GLITCH : FLAG;
+					else ClientPrefs.data.swapGlitchWiggle ? FLAG : GLITCH;
+				neoWiggle.waveSpeed = spd;
+				neoWiggle.waveFrequency = freq;
+				neoWiggle.waveAmplitude = amp;
+				shit.shader = neoWiggle.shader;
+				PlayState.instance.wiggleMap.set(tag, neoWiggle);
+				return true;
+			}
+			return false;
+		});
+			
+		Lua_helper.add_callback(lua, "addWiggleEffect", function(tag:String, ?spd:Float = 2.25, ?freq:Float = 5, ?amp:Float = 0.1, ?type:String = 'FLAG') {
+			if(MusicBeatState.getVariables().exists(tag)) {
+				var shit:ModchartSprite = MusicBeatState.getVariables().get(tag);
+				var neoWiggle:WiggleEffect = new WiggleEffect();
+				neoWiggle.effectType = if(type == 'WAVY') WAVY
+					else if(type == 'DREAMY') DREAMY
+					else if(type == 'HORIZONTAL') HEAT_WAVE_HORIZONTAL
+					else if(type == 'VERTICAL') HEAT_WAVE_VERTICAL
+					else if(type == 'GLITCH') ClientPrefs.data.swapGlitchWiggle ? FLAG : GLITCH;
+					else ClientPrefs.data.swapGlitchWiggle ? GLITCH : FLAG;
 				neoWiggle.waveSpeed = spd;
 				neoWiggle.waveFrequency = freq;
 				neoWiggle.waveAmplitude = amp;
@@ -766,6 +786,7 @@ class FunkinLua {
 			return true;
 		});
 		Lua_helper.add_callback(lua, "endSong", function() {
+			PlayState.instance.paused = false;
 			curGame.KillNotes();
 			curGame.endSong();
 			return true;
@@ -788,6 +809,7 @@ class FunkinLua {
 
 			PlayState.changedDifficulty = false;
 			PlayState.chartingMode = false;
+			PlayState.instance.paused = false;
 			curGame.transitioning = true;
 			FlxG.camera.followLerp = 0;
 			FlxG.sound.music.volume = 0;
@@ -1635,7 +1657,7 @@ class FunkinLua {
 
 			var resultStr:String = Lua.tostring(lua, result);
 			if(resultStr != null && result != 0) {
-				trace(resultStr);
+				Sys.println(resultStr);
 				#if (desktop || mobile)
 				CoolUtil.showPopUp(resultStr, 'Error on lua script!');
 				#else
@@ -1916,6 +1938,18 @@ class FunkinLua {
 		luaTrace('This platform doesn\'t support Runtime Shaders!', false, false, FlxColor.RED);
 		#end
 		return false;
+	}
+}
+#else
+class FunkinLua
+{
+		public static function luaTrace(text:String, ignoreCheck:Bool = false, deprecated:Bool = false, color:FlxColor = FlxColor.WHITE) {
+		if(ignoreCheck) {
+			if(deprecated) {
+				return;
+			}
+			PlayState.instance.addTextToDebug(text, color);
+		}
 	}
 }
 #end

@@ -1,30 +1,7 @@
-/*
- * Copyright (C) 2024 Mobile Porting Team
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
+
 
 package mobile.backend;
 
-#if android
-import android.os.Environment;
-#end
 import lime.system.System as LimeSystem;
 import haxe.io.Path;
 import haxe.Exception;
@@ -48,6 +25,13 @@ class StorageUtil
 		if (!FileSystem.exists(rootDir + 'storagetype.txt'))
 			File.saveContent(rootDir + 'storagetype.txt', ClientPrefs.data.storageType);
 		var curStorageType:String = File.getContent(rootDir + 'storagetype.txt');
+
+		//Migrate for people using older ports
+		if(curStorageType == "EXTERNAL_DATA"){
+			curStorageType = "INTERNAL";
+			ClientPrefs.data.storageType = "INTERNAL";
+			File.saveContent(rootDir + 'storagetype.txt', "INTERNAL");
+		}
 		daPath = force ? StorageType.fromStrForce(curStorageType) : StorageType.fromStr(curStorageType);
 		daPath = Path.addTrailingSlash(daPath);
 		#elseif ios
@@ -100,7 +84,7 @@ class StorageUtil
 	public static function checkUserStoragePermissions() {
 		var isAPI33 = AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU;
 		trace("Check perms...");
-
+		if(ClientPrefs.data.storageType == "INTERNAL") return;
 		if (!isAPI33){
 			trace("Requesting EXTERNAL_STORAGE");
 			AndroidPermissions.requestPermissions(['READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE']);
@@ -112,7 +96,7 @@ class StorageUtil
 			// 	AndroidSettings.requestSetting('REQUEST_MANAGE_MEDIA');
 			AndroidSettings.requestSetting('MANAGE_APP_ALL_FILES_ACCESS_PERMISSION');
 		}
-		var has_MANAGE_EXTERNAL_STORAGE = Environment.isExternalStorageManager();
+		var has_MANAGE_EXTERNAL_STORAGE = AndroidEnvironment.isExternalStorageManager();
 		var has_READ_EXTERNAL_STORAGE = AndroidPermissions.getGrantedPermissions().contains('android.permission.READ_EXTERNAL_STORAGE');
 		//var has_READ_MEDIA_IMAGES = AndroidPermissions.getGrantedPermissions().contains('android.permission.READ_MEDIA_IMAGES');
 		if ((isAPI33 && !has_MANAGE_EXTERNAL_STORAGE)
@@ -152,7 +136,7 @@ enum abstract StorageType(String) from String to String
 	final packageNameLocal = 'com.hrek.hexex.hslice';
 	final fileLocal = 'H-Slice';
 
-	var EXTERNAL_DATA = "EXTERNAL_DATA";
+	var INTERNAL = "INTERNAL";
 	var EXTERNAL = "EXTERNAL";
 
 	public static function fromStr(str:String):StorageType
@@ -160,9 +144,9 @@ enum abstract StorageType(String) from String to String
 		try{
 			return switch (str)
 			{
-				case "EXTERNAL_DATA": 
-					final EXTERNAL_DATA = AndroidContext.getExternalFilesDir();
-					EXTERNAL_DATA;
+				case "INTERNAL": 
+					final INTERNAL = AndroidContext.getExternalFilesDir();
+					INTERNAL;
 				case "EXTERNAL": 
 					final EXTERNAL = AndroidEnvironment.getExternalStorageDirectory() + '/.' + lime.app.Application.current.meta.get('file');
 					EXTERNAL;
@@ -178,12 +162,12 @@ enum abstract StorageType(String) from String to String
 
 	public static function fromStrForce(str:String):StorageType
 	{
-		final EXTERNAL_DATA = forcedPath + 'Android/data/' + packageNameLocal + '/files';
+		final INTERNAL = forcedPath + 'Android/data/' + packageNameLocal + '/files';
 		final EXTERNAL = forcedPath + '.' + fileLocal;
 
 		return switch (str)
 		{
-			case "EXTERNAL_DATA": EXTERNAL_DATA;
+			case "INTERNAL": INTERNAL;
 			case "EXTERNAL": EXTERNAL;
 			default: StorageUtil.getExternalDirectory(str) + '.' + fileLocal;
 		}

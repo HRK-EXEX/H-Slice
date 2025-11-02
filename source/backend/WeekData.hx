@@ -73,7 +73,10 @@ class WeekData {
 		weeksList = [];
 		weeksLoaded.clear();
 		#if MODS_ALLOWED
-		var directories:Array<String> = [Paths.mods(), Paths.getSharedPath()];
+		var directories:Array<String> = [Paths.mods()];
+		if (true) {
+			directories.push(Paths.getSharedPath());
+		}
 		var originalLength:Int = directories.length;
 
 		for (mod in Mods.parseList().enabled)

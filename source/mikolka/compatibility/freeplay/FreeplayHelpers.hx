@@ -39,7 +39,7 @@ class FreeplayHelpers {
 
 		var bpmList:Dynamic = null;
 		try {
-			bpmList = Json.parse(File.getContent("assets/bpmList.json"));
+			bpmList = Json.parse(File.getContent("cache/bpmList.json"));
 		} catch (e) {trace('Bpm list file not found'); noCache = true;}
 
 		// programmatically adds the songs via LevelRegistry and SongRegistry
@@ -73,12 +73,10 @@ class FreeplayHelpers {
 			WeekData.setDirectoryFromWeek(leWeek);
 			for (j => song in leWeek.songs)
 			{
-				if (Main.isConsoleAvailable) {
-					if (ClientPrefs.data.numberFormat)
-						Eseq.p('\x1b[0GLoading Song (${CoolUtil.formatMoney(j+offset+1)}/${CoolUtil.formatMoney(songCount)})');
-					else Eseq.p('\x1b[0GLoading Song (${j+offset+1}/$songCount)');
-				}
-			
+				if (ClientPrefs.data.numberFormat)
+					Eseq.p('Loading Song (${CoolUtil.formatMoney(j+offset+1)}/${CoolUtil.formatMoney(songCount)})');
+				else Eseq.p('Loading Song (${j+offset+1}/$songCount)');
+
 				colors = song[2];
 				if (colors == null || colors.length < 3)
 				{
@@ -94,15 +92,7 @@ class FreeplayHelpers {
 			offset += leWeek.songs.length;
 		}
 		Sys.print("\n");
-		
-		// for mobile compability
-		#if mobile
-		if (!NativeFileSystem.exists('assets'))
-			NativeFileSystem.createDirectory('assets');
-		#end
-
-		File.saveContent("assets/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
-
+		File.saveContent(StorageUtil.getStorageDirectory()+"/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
         return songs;
     }
 

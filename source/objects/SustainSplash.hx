@@ -1,14 +1,17 @@
 package objects;
 
+import backend.animation.PsychAnimationController;
 import objects.Note.CastNote;
 import flixel.math.FlxRandom;
 
 class SustainSplash extends FlxSprite
 {
-	public static var startCrochet:Float;
-	public static var frameRate:Int;
+	public static var frameRate = 24;
+	private static var noShader = false;
 	
-	public var holding:Bool = false;
+	public var startCrochet = 0.0;
+	public var holding = false;
+	public var ending = false;
 	public var note:Note;
 
 	var rnd:FlxRandom;
@@ -17,19 +20,33 @@ class SustainSplash extends FlxSprite
 	public function new():Void
 	{
 		super();
-		holding = false;
+		holding = ending = false;
 		note = new Note();
 		note.visible = false;
 		timer = new FlxTimer();
+
+		animation = new PsychAnimationController(this);
 
 		x = -50000;
 		rnd = new FlxRandom();
 
 		frames = Paths.getSparrowAtlas('holdCovers/holdCover-' + ClientPrefs.data.holdSkin);
+		noShader = ClientPrefs.data.holdSkin.toLowerCase().contains('classic') || ClientPrefs.data.noteShaders;
 
-		animation.addByPrefix('hold', 'holdCover0', 24, true);
-		animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
-		if(!animation.getNameList().contains("hold")) trace("Hold splash is missing 'hold' anim!");
+		if (noShader) {
+			for (i => str in Note.colArray) {
+				var pascalCase = str.substr(0,1).toUpperCase() + str.substr(1).toLowerCase();
+				animation.addByPrefix('hold$i', 'holdCover${pascalCase}0', 24, true);
+				animation.addByPrefix('end$i', 'holdCoverEnd${pascalCase}0', 24, false);
+				animation.addByPrefix('start$i', 'holdCoverStart${pascalCase}0', 24, false);
+			}
+		} else {
+			animation.addByPrefix('hold', 'holdCover0', 24, true);
+			animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
+			animation.addByPrefix('start', 'holdCoverStart0', 24, false);
+		}
+
+		if(!noShader && !animation.getNameList().contains("hold")) trace("Hold splash is missing 'hold' anim!");
 	}
 
 	override function update(elapsed)
@@ -54,15 +71,22 @@ class SustainSplash extends FlxSprite
 		timer.cancel();
 		
 		if (!note.isSustainEnds) {
-			visible = true; holding = true;
+			holding = true;
+			ending = false;
 
 			if (note.strum != null) setPosition(note.strum.x, note.strum.y);
 
-			animation.play('hold', true, false, 0);
+			animation.play('start${noShader ? Std.string(note.noteData) : ''}', true);
+
 			if (animation.curAnim != null)
 			{
+				animation.curAnim.looped = false;
 				animation.curAnim.frameRate = frameRate;
-				animation.curAnim.looped = true;
+				animation.finishCallback = a -> {
+					animation.play('hold${noShader ? Std.string(note.noteData) : ''}', true);
+					animation.curAnim.frameRate = frameRate;
+					animation.curAnim.looped = true;
+				};
 			}
 
 			clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
@@ -78,36 +102,28 @@ class SustainSplash extends FlxSprite
 
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note.strum.alpha);
 			offset.set(PlayState.isPixelStage ? 112.5 : 106.25, 100);
-		} else if (holding && ClientPrefs.data.holdSkin != "None") {
-			timer.start(startCrochet / playbackRate * 0.001, t -> showEndSplash(true));
+		} else if (holding) {
+			startCrochet = (Conductor.stepCrochet - Conductor.songPosition + note.strumTime) * 0.001 / playbackRate;
+			timer.start(startCrochet, t -> showEndSplash(true));
 		}
-	}
-
-	public function sendSustainEnd(anim:Bool = true) {
-		if (holding) showEndSplash(anim);
 	}
 
 	public function isTimerWorking() {
 		return timer.active;
 	}
 
-	function showEndSplash(anim:Bool) {
-		holding = false;
-		if (anim && animation != null)
+	public function showEndSplash(anim:Bool = true) {
+		holding = false; ending = true;
+		if (timer.active) timer.cancel();
+		if (anim && animation != null && note != null)
 		{
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note.strum.alpha);
-			animation.play('end', true, false, 0);
+			animation.play('end${noShader ? Std.string(note.noteData) : ''}', true, false, 0);
 			animation.curAnim.looped = false;
 			animation.curAnim.frameRate = rnd.int(22, 26);
 			clipRect = null;
 			animation.finishCallback = idkEither -> kill();
 			return;
 		} else kill();
-	}
-
-	override function kill() {
-		holding = false;
-		timer.cancel();
-		super.kill();
 	}
 }

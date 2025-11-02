@@ -4,7 +4,6 @@ import options.Option;
 
 class GameplaySettingsSubState extends BaseOptionsMenu
 {
-	var pastValue:Float = 0;
 	var accuracyOption:Option;
 	var timerMethod:Option;
 	var bgmVolume:Option;
@@ -121,13 +120,6 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
-		// It may conflict on my feature
-		// var option:Option = new Option('Pop Up Score',
-		// 	"If unchecked, hitting notes won't make \"sick\", \"good\".. and combo popups\n(Useful for low end " + Main.platform + ").",
-		// 	'popUpRating',
-		// 	BOOL);
-		// addOption(option);
-
 		var option:Option = new Option('Disable Reset Button',
 			"If checked, pressing Reset won't do anything.",
 			'noReset',
@@ -186,11 +178,11 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			'hitsoundVolume',
 			PERCENT);
 		addOption(option);
-		option.scrollSpeed = 1.6;
+		option.scrollSpeed = 1;
 		option.minValue = 0.0;
 		option.maxValue = 1;
-		option.changeValue = 0.1;
-		option.decimals = 1;
+		option.changeValue = 0.01;
+		option.decimals = 2;
 		option.onChange = onChangeHitsoundVolume;
 		hitVolume = option;
 
@@ -283,28 +275,20 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 	}
 
 	function onChangebgmVolume(){
-		if(pastValue != bgmVolume.getValue()) {
-			FlxG.sound.music.volume = pastValue = bgmVolume.getValue();
-		}
+		FlxG.sound.music.volume = 0.8 * bgmVolume.getValue();
 	}
 
 	function onChangeSfxVolume(){
-		if(pastValue != sfxVolume.getValue()) {
-			if(holdTime - rateHold > 0.05 || holdTime <= 0.5) {
-				rateHold = holdTime;
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.hitsoundVolume);
-			}
-			pastValue = sfxVolume.getValue();
+		if(holdTime - rateHold > 0.05 || holdTime <= 0.5) {
+			rateHold = holdTime;
+			// FlxG.sound.play(Paths.sound('scrollMenu'), sfxVolume.getValue());
 		}
 	}
 
 	function onChangeHitsoundVolume(){
-		if(pastValue != hitVolume.getValue()) {
-			if(holdTime - rateHold > 0.05 || holdTime <= 0.5) {
-				FlxG.sound.play(Paths.sound('hitsound'), ClientPrefs.data.hitsoundVolume);
-				rateHold = holdTime;
-			}
-			pastValue = hitVolume.getValue();
+		if(holdTime - rateHold > 0.05 || holdTime <= 0.5) {
+			rateHold = holdTime;
+			FlxG.sound.play(Paths.sound('hitsound'), hitVolume.getValue());
 		}
 	}
 

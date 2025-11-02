@@ -1,5 +1,7 @@
 package options;
 
+import flixel.system.scaleModes.RatioScaleMode;
+import mikolka.funkin.custom.mobile.MobileScaleMode;
 import objects.Character;
 import options.Option;
 
@@ -43,17 +45,31 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option('WiggleEffect <-> GlitchEffect', //Name
+			"If checked, swaps the WiggleEffect and GlitchEffect. It's for vs dave and bambi mods.", //Description
+			'swapGlitchWiggle',
+			BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Note Shaders', //Name
 			"If unchecked, disables note shaders.\nPlease use the noteSkin older than psych v0.6.x!", //Description
 			'noteShaders',
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Multithreaded Caching', //Name
-		"If checked, enables multithreaded loading, which improves loading times but with a low chance for the game to freeze while loading a song.", //Description
-		'cacheOnCPU',
-		BOOL);
+		option = new Option('Wide Screen Mode',
+			'If checked, The game will stetch to fill your whole screen. (WARNING: Can result in bad visuals & break some mods that resizes the game/cameras)',
+			'wideScreen', BOOL);
+		option.onChange = () -> MobileScaleMode.enabled = ClientPrefs.data.wideScreen;
 		addOption(option);
+
+		#if MULTITHREADED_LOADING
+		var option:Option = new Option('Multithreaded Caching', //Name
+			"If checked, enables multithreaded loading, which improves loading times but with a low chance for the game to freeze while loading a song.", //Description
+			'cacheOnCPU',
+			BOOL);
+		addOption(option);
+		#end
 		
 		var option:Option = new Option('GPU Caching', //Name
 			"If checked, allows the GPU to be used for caching textures,\ndecreasing RAM usage. Don't turn this on if you have a shitty Graphics Card.", //Description
@@ -69,6 +85,14 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		option.onChange = onChangeVSync;
 		addOption(option);
 		syncOption = option;
+		#end
+
+		#if STRICT_LOADING_SCREEN
+		var option:Option = new Option('Strict Loading Screen', //Name
+			"If checked, the game will unload the UI assets first, and then preload the song data (useful for low-memory devices)", //Description
+			'strictLoadingScreen',
+			BOOL);
+		addOption(option);
 		#end
 
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
@@ -120,20 +144,17 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 	#if sys
 	function onChangeVSync()
 	{
-		// #if linux
 		var file:String = StorageUtil.rootDir + "vsync.txt";
 		if(FileSystem.exists(file))
 			FileSystem.deleteFile(file);
-		File.saveContent(file, Std.string(ClientPrefs.data.vsync));
-		// #else
+		File.saveContent(file, Std.string(syncOption.getValue()));
 		FlxG.stage.application.window.vsync = syncOption.getValue();
-		// #end
 	}
 	#end
 
-	override function changeSelection(change:Int = 0)
+	override function changeSelection(change:Float,usePrecision:Bool = false) 
 	{
-		super.changeSelection(change);
+		super.changeSelection(change,usePrecision);
 		boyfriend.visible = (antialiasingOption == curSelected);
 	}
 }

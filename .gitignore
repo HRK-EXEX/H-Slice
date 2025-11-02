@@ -15,6 +15,7 @@ export/*
 TEST.bat
 RUN.bat
 log.txt
+.DS_Store
 #.github/
 *.code-workspace
 vs_Community.exe
@@ -29,3 +30,4 @@ vs_Community.exe
 !.vscode/extensions.json
 art/build_html.bat
 art/build_html-debug.bat
+*.astc

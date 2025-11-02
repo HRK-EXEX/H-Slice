@@ -98,8 +98,8 @@ class Option
 	public function change()
 	{
 		//nothing lol
-		if(onChange != null)
-			onChange();
+		if(onChange != null) onChange();
+		
 	}
 
 	dynamic public function getValue():Dynamic

@@ -256,11 +256,11 @@ class SongJson {
 
 	function showProgress(force:Bool = false) {
 		if (force || Timer.stamp() - time > 0.01) {
-			if (Main.isConsoleAvailable && log) {
+			if (log) {
 				if (ClientPrefs.data.numberFormat)
-					Eseq.p('\x1b[0G${CoolUtil.formatMoney(pos)}/${CoolUtil.formatMoney(str.length)}');
+					Eseq.p('${CoolUtil.formatMoney(pos)}/${CoolUtil.formatMoney(str.length)}');
 				else
-					Eseq.p('\x1b[0G$pos/${str.length}');
+					Eseq.p('$pos/${str.length}');
 			}
 			time = Timer.stamp();
 		}

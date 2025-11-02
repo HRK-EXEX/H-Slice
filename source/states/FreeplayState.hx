@@ -116,12 +116,11 @@ class FreeplayState extends MusicBeatState
 				}
 				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]));
 			}
-			if(Main.isConsoleAvailable) {
-				if (ClientPrefs.data.numberFormat)
-					Eseq.p('\x1b[0GLoading Weeklist (${CoolUtil.formatMoney(i+1)}/${CoolUtil.formatMoney(WeekData.weeksList.length)})');
-				else
-					Eseq.p('\x1b[0GLoading Weeklist (${i+1}/${WeekData.weeksList.length})');
-			}
+			
+			if (ClientPrefs.data.numberFormat)
+				Eseq.p('Loading Weeklist (${CoolUtil.formatMoney(i+1)}/${CoolUtil.formatMoney(WeekData.weeksList.length)})');
+			else
+				Eseq.p('Loading Weeklist (${i+1}/${WeekData.weeksList.length})');
 		}
 		Sys.print("\n");
 		Mods.loadTopMod();
@@ -293,7 +292,7 @@ class FreeplayState extends MusicBeatState
 		while (loading < songs.length) {
 			loadSong(loading++);
 			delayTime = Timer.stamp() - stampTime;
-			if (delayTime > 1 / Math.max(ClientPrefs.data.framerate, 30) || loading >= songs.length) {
+			if (delayTime > 1 / Math.min(ClientPrefs.data.framerate, 30) || loading >= songs.length) {
 				var curr = "", total = "", prog = CoolUtil.floatToStringPrecision(loading * 100.0 / songs.length, 1);
 
 				if (ClientPrefs.data.numberFormat) {
@@ -303,10 +302,9 @@ class FreeplayState extends MusicBeatState
 					curr = Std.string(loading); total = Std.string(songs.length);
 				}
 
-				if (Main.isConsoleAvailable) {
-					Eseq.p('\x1b[0GLoading Song - $curr / $total - $prog % Done');
-				}
-				loadingText.text = 'Loading Song...\n$curr / $total - $prog % Done';
+				Eseq.p('Loading Songs - $curr / $total - $prog %');
+				
+				loadingText.text = 'Loading Songs...\n$curr / $total - $prog %';
 				loadingText.screenCenter();
 
 				stampTime = Timer.stamp();

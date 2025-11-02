@@ -86,23 +86,24 @@ jobs:
       - name: Compile
         run: haxelib run lime build ${{ inputs.buildArgs }}
 
-      - name: Sign APK with the proper key
-        if: inputs.exportPath == 'android'
-        env:
-          OUT_DIR: ./export/release/android/bin/app/build/outputs/apk/release/
-          SIGNING_KEY: ${{ secrets.HRK_EXEX_PASSWORD }}
-          SIGNING_ALIAS: hslice
-          SIGNING_FILE: ${{ secrets.HRK_EXEX_KEYSTORE }}
-        run: |
-          rm -f ./hslice.keystore;
-          echo $SIGNING_FILE | base64 -d > ./hslice.keystore;
-          sha256sum ./hslice.keystore;
+      # are you sure is this okay to comment out bro
+      # - name: Sign APK with the proper key
+      #   if: inputs.exportPath == 'android'
+      #   env:
+      #     OUT_DIR: ./export/release/android/bin/app/build/outputs/apk/release/
+      #     SIGNING_KEY: ${{ secrets.HRK_EXEX_PASSWORD }}
+      #     SIGNING_ALIAS: hslice
+      #     SIGNING_FILE: ${{ secrets.HRK_EXEX_KEYSTORE }}
+      #   run: |
+      #     rm -f ./hslice.keystore;
+      #     echo $SIGNING_FILE | base64 -d > ./hslice.keystore;
+      #     sha256sum ./hslice.keystore;
 
-          mv '${{env.OUT_DIR}}H-Slice-release.apk' '${{env.OUT_DIR}}H-Slice-unsigned.apk';
-          $ANDROID_HOME/build-tools/35.0.1/zipalign -P 16 -f -v 4 '${{env.OUT_DIR}}H-Slice-unsigned.apk' '${{env.OUT_DIR}}H-Slice-release.apk' > /dev/null;
+      #     mv '${{env.OUT_DIR}}H-Slice-release.apk' '${{env.OUT_DIR}}H-Slice-unsigned.apk';
+      #     $ANDROID_HOME/build-tools/35.0.1/zipalign -P 16 -f -v 4 '${{env.OUT_DIR}}H-Slice-unsigned.apk' '${{env.OUT_DIR}}H-Slice-release.apk' > /dev/null;
 
-          $ANDROID_HOME/build-tools/35.0.1/apksigner sign --ks hslice.keystore --ks-key-alias $SIGNING_ALIAS --ks-pass "env:SIGNING_KEY" --key-pass "env:SIGNING_KEY" '${{env.OUT_DIR}}H-Slice-release.apk';
-          rm '${{env.OUT_DIR}}H-Slice-unsigned.apk';
+      #     $ANDROID_HOME/build-tools/35.0.1/apksigner sign --ks hslice.keystore --ks-key-alias $SIGNING_ALIAS --ks-pass "env:SIGNING_KEY" --key-pass "env:SIGNING_KEY" '${{env.OUT_DIR}}H-Slice-release.apk';
+      #     rm '${{env.OUT_DIR}}H-Slice-unsigned.apk';
 
       - name: Make IPA
         if: inputs.name == 'iOS'

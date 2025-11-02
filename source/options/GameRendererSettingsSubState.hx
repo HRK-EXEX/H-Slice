@@ -129,13 +129,11 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 			"Set bitrate in here.",
 			'bitrate',
 			FLOAT);
-		final bitrate:Int = option.getValue();
 		option.minValue = 0.01;
 		option.maxValue = 100;
 		option.changeValue = 0.01;
 		option.scrollSpeed = 3;
 		option.decimals = 2;
-		option.defaultValue = Std.int(FlxMath.bound(bitrate, option.minValue, option.maxValue));
 		option.displayFormat = '%v Mbps';
 		bitOption = option;
 		option.onChange = onChangeBitrate;
@@ -148,12 +146,10 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 			FLOAT);
 		addOption(option);
 
-		final bitrate:Int = option.getValue();
 		option.minValue = 0;
 		option.maxValue = 51;
 		option.scrollSpeed = 20;
 		option.decimals = 1;
-		option.defaultValue = Std.int(FlxMath.bound(bitrate, option.minValue, option.maxValue));
 		option.displayFormat = '%v';
 		bitOption = option;
 
@@ -260,7 +256,7 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 				++cnt;
 				FlxG.sound.play(Paths.sound('soundtray/Volup'), ClientPrefs.data.sfxVolume);
 			} else {
-				FlxG.sound.play(Paths.sound('soundtray/VolDown'), ClientPrefs.data.sfxVolume);
+				FlxG.sound.play(Paths.sound('soundtray/Voldown'), ClientPrefs.data.sfxVolume);
 			}
 
 			for (i in 0...(maxLength - codec.length)) {
@@ -294,8 +290,8 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		ClientPrefs.data.codec = backupCodec;
 	}
 
-	override function changeSelection(change:Int = 0) {
-		super.changeSelection(change);
+	override function changeSelection(delta:Float, usePrecision:Bool = false) {
+		super.changeSelection(delta, usePrecision);
 		
 		if (missingText != null) {
 			missingText.visible = false;

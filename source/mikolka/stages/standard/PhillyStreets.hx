@@ -370,9 +370,14 @@ class PhillyStreets extends BaseStage
 			rainShader.updateViewInfo(FlxG.width, FlxG.height, FlxG.camera);
 			rainShader.update(elapsed);
 
-			if (rainSndAmbience != null && FlxG.sound.volume != 0)
+			if (rainSndAmbience != null)
 			{
-				rainSndAmbience.volume = Math.min(0.3, remappedIntensityValue * 2);
+				if (FlxG.sound.volume != 0) {
+					rainSndAmbience.volume = Math.min(0.3, remappedIntensityValue * 2) * ClientPrefs.data.bgmVolume;
+				} else {
+					// removes annoying noises in cutscenes
+					rainSndAmbience.volume = carSndAmbience.volume = 0;
+				}
 			}
 		}
 

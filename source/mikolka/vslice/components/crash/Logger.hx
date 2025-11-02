@@ -17,27 +17,26 @@ class Logger {
         #else
         try{
             file = File.write(StorageUtil.getStorageDirectory()+"/latest.log");
-        }
-        catch(x:Exception){
+        } catch(x:Exception) {
             #if (LEGACY_PSYCH)
             FlxG.stage.window.alert(x.message, "File logging failed to init");
             #else
             #if macos
             if(StorageUtil.getStorageDirectory().contains("AppTranslocation"))
-                CoolUtil.showPopUp("MacOS decided to isolate P-Slice from the rest of your system!"+
-                "As such, you need to move P-Slice away from the \"Downloads\" folder into either your applications, or another folder.","File logging failed to init");
+                CoolUtil.showPopUp("MacOS decided to isolate H-Slice from the rest of your system!"+
+                "As such, you need to move H-Slice away from the \"Downloads\" folder into either your applications, or another folder.","File logging failed to init");
             else
             #end
             CoolUtil.showPopUp(x.message,"File logging failed to init");
             #end
         }
-        LogStyle.WARNING.onLog.add(log);
+        #if debug LogStyle.WARNING.onLog.add(log); #end
         LogStyle.ERROR.onLog.add(log);
         #end
         Log.trace = log;
     }
     
-    public static var logType(default, null) = 0;
+    public static var logType(default, null) = 1;
 
     public static function updateLogType() {
         logType = switch (VsliceOptions.LOGGING) {
@@ -52,8 +51,8 @@ class Logger {
     private static function log(v:Dynamic, ?infos:PosInfos):Void {
         if (logType == 0) return;
         var str = Log.formatOutput(v,infos);
-        if (logType & 1 != 0) Sys.println(str);
-        if (logType & 2 != 0) {
+        if (logType & 1 > 0) Sys.println(str);
+        if (logType & 2 > 0) {
             if (file != null) {
                 file.writeString(str+"\n");
                 file.flush();

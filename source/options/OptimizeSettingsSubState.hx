@@ -34,7 +34,7 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
         var option:Option = new Option('Show Notes',
-			"If unchecked, appearTime is set to 0.\nAll notes will be processed as skipped notes.\nBotplay is force-enabled.",
+			"If unchecked, appearTime sets to 0.\nAll notes will be processed as skipped notes.\nBotplay is force-enabled.",
 			'showNotes',
 			BOOL);
 		addOption(option);

@@ -406,12 +406,11 @@ class FreeplayState extends MusicBeatSubstate
 				if (!diffIdsTotalModBinds.exists(difficulty))
 					diffIdsTotalModBinds.set(difficulty, sngCard.folder);
 			}
-			if(Main.isConsoleAvailable) {
-				if (ClientPrefs.data.numberFormat)
-					Eseq.p('\x1b[0GSetting Weeklist (${CoolUtil.formatMoney(index+1)}/${CoolUtil.formatMoney(allSongs.length)})');
-				else
-					Eseq.p('\x1b[0GSetting Weeklist (${index+1}/${allSongs.length})');
-			}
+
+			if (ClientPrefs.data.numberFormat)
+				Eseq.p('Setting Weeklist (${CoolUtil.formatMoney(index+1)}/${CoolUtil.formatMoney(allSongs.length)})');
+			else
+				Eseq.p('Setting Weeklist (${index+1}/${allSongs.length})');
 		}
 
 		if (backingCard != null)

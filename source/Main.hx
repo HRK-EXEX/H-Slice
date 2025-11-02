@@ -50,7 +50,6 @@ class Main extends Sprite
 	public static var fpsBg:FPSBg;
 	public static var fpsVar:FPSCounter;
 
-	public static var isConsoleAvailable:Bool = true;
 	public static final platform:String = #if mobile "Phones" #else "PCs" #end;
 
 	// Game pre-flixel init code
@@ -113,7 +112,6 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
-		isConsoleAvailable = Eseq.available;
 
 		if (stage != null)
 		{
@@ -141,8 +139,7 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
-
-		trace(backend.Native.buildSystemInfo());
+		// trace(backend.Native.buildSystemInfo());
 		#if HXCPP_TRACY
 		trace("Starting tracy");
 		cpp.vm.tracy.TracyProfiler.messageAppInfo(backend.Native.buildSystemInfo());

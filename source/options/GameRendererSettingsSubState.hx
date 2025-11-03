@@ -277,9 +277,6 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 			FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume);
 		} else {
 			missingText.text = 'Test simple result: $cnt/$maxLength codecs passed.\n\n' + output;
-			// Sys.println('Test simple result: $cnt/$maxLength codecs passed.');
-			// if (cnt != maxLength) 
-			// 	Sys.println('Check avail_codecs.txt for details.');
 		}
 
 		missingText.screenCenter(Y);

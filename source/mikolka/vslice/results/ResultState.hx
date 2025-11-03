@@ -228,7 +228,7 @@ class ResultState extends MusicBeatSubState
 					if (VsliceOptions.NAUGHTYNESS)
 						continue;
 				default:
-					trace(animData.filter + " is not a valid filter!");
+					// trace(animData.filter + " is not a valid filter!");
 					continue;
 			}
 
@@ -262,7 +262,7 @@ class ResultState extends MusicBeatSubState
 							// Animation is not looped.
 							animation.onAnimationComplete.add((_name:String) ->
 							{
-								trace("AHAHAH 2");
+								// trace("AHAHAH 2");
 								if (animation != null)
 								{
 									animation.anim.pause();
@@ -273,7 +273,7 @@ class ResultState extends MusicBeatSubState
 						{
 							animation.onAnimationComplete.add((_name:String) ->
 							{
-								trace("AHAHAH 2");
+								// trace("AHAHAH 2");
 								if (animation != null)
 								{
 									animation.playAnimation(animData.loopFrameLabel ?? '', true, false, true); // unpauses this anim, since it's on PlayOnce!
@@ -286,7 +286,7 @@ class ResultState extends MusicBeatSubState
 							{
 								if (animation != null)
 								{
-									trace("AHAHAH");
+									// trace("AHAHAH");
 									animation.anim.curFrame = animData.loopFrame ?? 0;
 									animation.anim.play(); // unpauses this anim, since it's on PlayOnce!
 								}
@@ -897,7 +897,7 @@ class ResultState extends MusicBeatSubState
 
 		if (TouchUtil.justPressed || controls.PAUSE)
 		{
-			if (FlxG.sound.music != null)
+			if (FlxG.sound.music != null && isNewFreePlay)
 			{
 				FlxTween.tween(FlxG.sound.music, {volume: 0}, 0.8);
 				FlxTween.tween(FlxG.sound.music, {pitch: 3}, 0.1, {
@@ -1004,7 +1004,7 @@ class ResultState extends MusicBeatSubState
 						}
 						else
 						{
-							FlxG.sound.pause(); // ? fix sound
+							if (isNewFreePlay) FlxG.sound.pause(); // ? fix sound
 							FlxG.switchState(targetState);
 						}
 					}

@@ -49,8 +49,8 @@ typedef CastNote = {
 	// 15th bit is for blockHit
 	// 16th bit is for ignoreNote
 	var noteData:Int;
-	var holdLength:Null<Float>;
-	@:optional var noteType:String;
+	var noteType:String;
+	var holdLength:Float;
 }
 
 var toBool = CoolUtil.bool;
@@ -127,11 +127,11 @@ class Note extends FlxSprite
 	public static var isBotplay:Bool = false;
 
 	public static final SUSTAIN_SIZE:Int = 44;
+	public static final DEFAULT_NOTE_SKIN:String = 'noteSkins/NOTE_assets';
 	public static var swagWidth:Float = 160 * 0.7;
 	public static var originalWidth:Float = swagWidth;
 	public static var originalHeight:Float = swagWidth;
 	public static var colArray:Array<String> = ['purple', 'blue', 'green', 'red'];
-	public static var defaultNoteSkin(default, never):String = 'noteSkins/NOTE_assets';
 	public static var chartArrowSkin:String = null;
 	public static var pixelWidth:Vector<Int> = new Vector(2, 0);
 	public static var pixelHeight:Vector<Int> = new Vector(2, 0);
@@ -212,7 +212,7 @@ class Note extends FlxSprite
 	// It's only used newing instances
 	private function set_texture(value:String):String {
 		if (value == null || value.length == 0) {
-			value = defaultNoteSkin + getNoteSkinPostfix();
+			value = DEFAULT_NOTE_SKIN + getNoteSkinPostfix();
 		}
 		// if (!PlayState.isPixelStage) {
 		if(texture != value) {
@@ -357,7 +357,7 @@ class Note extends FlxSprite
 		{
 			rSkin = PlayState.SONG != null ? PlayState.SONG.arrowSkin : null;
 			if(rSkin == null || rSkin.length < 1)
-				rSkin = defaultNoteSkin + postfix;
+				rSkin = DEFAULT_NOTE_SKIN + postfix;
 		}
 		else rgbShader.enabled = false;
 
@@ -577,7 +577,7 @@ class Note extends FlxSprite
 		super.kill();
 	}
 	
-	var initSkin:String = Note.defaultNoteSkin + getNoteSkinPostfix();
+	var initSkin:String = Note.DEFAULT_NOTE_SKIN + getNoteSkinPostfix();
 	var playbackRate:Float;
 	var correctWidth:Float;
 

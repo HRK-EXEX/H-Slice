@@ -310,7 +310,7 @@ class FreeplayState extends MusicBeatState
 				stampTime = Timer.stamp();
 				
 				if (loading >= songs.length) {
-					Sys.println('\nLoading Done');
+					Eseq.pln('\nLoading Done');
 					WeekData.setDirectoryFromWeek();
 					loadingText.visible = loadingTextBG.visible = false;
 					scoreText.visible = scoreBG.visible = diffText.visible = bottomBG.visible = bottomText.visible = true;
@@ -330,10 +330,8 @@ class FreeplayState extends MusicBeatState
 		lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 24)));
 		lerpRating = FlxMath.lerp(intendedRating, lerpRating, Math.exp(-elapsed * 12));
 
-		if (Math.abs(lerpScore - intendedScore) <= 10)
-			lerpScore = intendedScore;
-		if (Math.abs(lerpRating - intendedRating) <= 0.01)
-			lerpRating = intendedRating;
+		if (Math.abs(lerpScore - intendedScore) <= 10) lerpScore = intendedScore;
+		if (Math.abs(lerpRating - intendedRating) <= 0.01) lerpRating = intendedRating;
 
 		// ratingSplit = Std.string(CoolUtil.floorDecimal(lerpRating * 100, 2)).split('.');
 		// if(ratingSplit.length < 2) //No decimals, add an empty space

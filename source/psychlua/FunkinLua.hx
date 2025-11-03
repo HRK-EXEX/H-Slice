@@ -1,4 +1,5 @@
 package psychlua;
+import hrk.Eseq;
 #if LUA_ALLOWED
 
 import backend.WeekData;
@@ -1657,7 +1658,7 @@ class FunkinLua {
 
 			var resultStr:String = Lua.tostring(lua, result);
 			if(resultStr != null && result != 0) {
-				Sys.println(resultStr);
+				Eseq.pln(resultStr);
 				#if (desktop || mobile)
 				CoolUtil.showPopUp(resultStr, 'Error on lua script!');
 				#else

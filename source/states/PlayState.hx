@@ -1892,7 +1892,7 @@ class PlayState extends MusicBeatState
 								strumTime: swagNote.strumTime + curStepCrochet * susNote,
 								noteData: swagNote.noteData,
 								noteType: swagNote.noteType,
-								holdLength: null
+								holdLength: 0.0
 							};
 							
 							sustainNote.noteData |= 1<<9; // isHold
@@ -1918,32 +1918,32 @@ class PlayState extends MusicBeatState
 
 			showProgress(true);
 
-			Sys.println('\n[ --- "${SONG.song.toUpperCase()}" CHART INFO --- ]');
+			Eseq.pln('\n[ --- "${SONG.song.toUpperCase()}" CHART INFO --- ]');
 			
 			var takenTime = CoolUtil.getNanoTime() - loadTime;
 			var takenNoteTime = CoolUtil.getNanoTime() - loadNoteTime;
 
-			Sys.println('Loaded ${numberDelimit ? formatD(notes) : Std.string(notes)} notes!\n' + 
-						'Sustain notes amount: ${numberDelimit ? formatD(sustainTotalCnt) : Std.string(sustainTotalCnt)}\n' + 
-						'Taken time: ${numFormat(takenTime, 6)} sec\n' + 
-						'Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}'
+			Eseq.pln('Loaded ${numberDelimit ? formatD(notes) : Std.string(notes)} notes!\n' + 
+					'Sustain notes amount: ${numberDelimit ? formatD(sustainTotalCnt) : Std.string(sustainTotalCnt)}\n' + 
+					'Taken time: ${numFormat(takenTime, 6)} sec\n' + 
+					'Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}'
 			);
 
 			if (skipGhostNotes) {
 				if (ghostNotesCaught > 0)
-					Sys.println('Overlapped Notes Cleared: $ghostNotesCaught');
+					Eseq.pln('Overlapped Notes Cleared: $ghostNotesCaught');
 				else {
-					Sys.println('WOW! There is no overlapped notes. Great charting!');
+					Eseq.pln('WOW! There is no overlapped notes. Great charting!');
 				}
 			}
 		
-			Sys.println('Merging Notes...');
+			Eseq.pln('Merging Notes...');
 			for (usn in unspawnSustainNotes)
 				unspawnNotes.push(usn);
 			
 			unspawnSustainNotes.resize(0);
 
-			Sys.println('Sorting Notes...');
+			Eseq.pln('Sorting Notes...');
 			ArraySort.sort(unspawnNotes, sortByTime);
 		} else {
 			trace("Unspawned Notes are omitted since they are already in the memory!");
@@ -1955,7 +1955,7 @@ class PlayState extends MusicBeatState
 				makeEvent(event, i);
 
 		generatedMusic = true;
-		Sys.println('Ready to PLAY!');
+		Eseq.pln('Ready to PLAY!');
 	}
 
 	// called only once per different event (Used for precaching)
@@ -3379,11 +3379,11 @@ class PlayState extends MusicBeatState
 		if (ffmpegMode && !previewRender) {
 			if (cancelCount < 3) {
 				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume).pitch = cancelCount * 0.2 + 1;
-				Sys.println(3 - cancelCount + " left to escape the rendering.");
+				Eseq.pln(3 - cancelCount + " left to escape the rendering.");
 				++cancelCount;
 			} else {
 				FlxG.fixedTimestep = false;
-				Sys.println("you escaped the rendering succesfully.");
+				Eseq.pln("you escaped the rendering succesfully.");
 				finishSong();
 			}
 
@@ -3391,7 +3391,7 @@ class PlayState extends MusicBeatState
 			pauseTimer = new FlxTimer().start(3, _ -> {
 				cancelCount = 0;
 				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume).pitch = 0.5;
-				Sys.println("Cancelled to escape rendering.\nWait build up for video.");
+				Eseq.pln("Cancelled to escape rendering.\nWait build up for video.");
 			});
 			
 			return;
@@ -4668,11 +4668,11 @@ class PlayState extends MusicBeatState
 				{ // I can't do a filter here, that's kinda awesome
 					var canHit:Bool = (n != null && !strumsBlocked[n.noteData] && n.canBeHit && n.mustPress && !n.tooLate && !n.wasGoodHit && !n.blockHit);
 
-					if (canHit && n.isSustainNote)
+					if (canHit && n.isSustainNote && n.strumTime < Conductor.songPosition)
 					{
-						var released:Bool = !holdArray[n.noteData];
+						// var released:Bool = !;
 
-						if (!released) {
+						if (holdArray[n.noteData]) {
 							goodNoteHit(n);
 						}
 					}

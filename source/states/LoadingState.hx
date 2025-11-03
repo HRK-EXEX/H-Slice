@@ -221,6 +221,9 @@ class LoadingState extends MusicBeatState
 	}
 
 	var transitioning:Bool = false;
+	var forceQuit:Bool = false;
+	var quitCount:Int = 0;
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -272,6 +275,43 @@ class LoadingState extends MusicBeatState
 				dots = '...';
 		}
 		loadingText.text = Language.getPhrase('now_loading', 'Now Loading{1}', [dots]);
+
+		if (controls.BACK) {
+			if (quitCount < 3) {
+				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume).pitch = (1 + quitCount * 0.2);
+			} else {
+				#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
+				PlayState.deathCounter = 0;
+				PlayState.seenCutscene = false;
+				//! not yet
+				Mods.loadTopMod();
+				FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = ClientPrefs.data.vsliceFreeplay;
+
+				FlxG.sound.pause();
+				if (PlayState.isStoryMode) {
+					PlayState.storyPlaylist = [];
+					if (ClientPrefs.data.vsliceFreeplay) {
+						openSubState(new StickerSubState(null, sticker -> new StoryMenuState(sticker)));
+					} else {
+						MusicBeatState.switchState(new StoryMenuState());
+						FlxG.sound.playMusic(Paths.music('freakyMenu'), ClientPrefs.data.bgmVolume);
+					}
+				} else {
+					if (ClientPrefs.data.vsliceFreeplay) {
+						openSubState(new StickerSubState(null, sticker -> NewFreeplayState.build(null, sticker)));
+					} else {
+						MusicBeatState.switchState(new FreeplayState());
+						FlxG.sound.playMusic(Paths.music('freakyMenu'), ClientPrefs.data.bgmVolume);
+					}
+				}
+					
+				PlayState.changedDifficulty = false;
+				PlayState.chartingMode = false;
+				FlxG.camera.followLerp = 0;
+				PlayState.unspawnNotes = [];
+			}
+			quitCount++;
+		}
 
 		if(!spawnedPessy)
 		{
@@ -482,7 +522,7 @@ class LoadingState extends MusicBeatState
 		var folder:String = Paths.formatToSongPath(Song.loadedSongName);
 		new Future<Bool>(() -> {
 			// LOAD NOTE IMAGE
-			var noteSkin:String = Note.defaultNoteSkin;
+			var noteSkin:String = Note.DEFAULT_NOTE_SKIN;
 			if(PlayState.SONG.arrowSkin != null && PlayState.SONG.arrowSkin.length > 1) noteSkin = PlayState.SONG.arrowSkin;
 	
 			var customSkin:String = noteSkin + Note.getNoteSkinPostfix();

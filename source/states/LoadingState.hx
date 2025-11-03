@@ -1,5 +1,8 @@
 package states;
 
+import mikolka.vslice.freeplay.FreeplayState as NewFreeplayState;
+import states.FreeplayState;
+import mikolka.vslice.StickerSubState;
 import lime.app.Future;
 import sys.thread.FixedThreadPool;
 import haxe.Json;

@@ -274,14 +274,14 @@ class FreeplayState extends MusicBeatState
 	public static var opponentVocals:FlxSound = null;
 	var holdTime:Float = 0;
 
-	var stopMusicPlay:Bool = false;
+	var stopMusicPlay = false;
 	var ratingFormat:String;
 	var ratingSplit:Array<String> = [];
-	var shiftMult:Int;
+	var shiftMult = 1;
 
-	var spamTime:Float = 0;
-	var stampTime:Float = Timer.stamp();
-	var delayTime:Float = Timer.stamp();
+	var spamTime = 0.0;
+	var stampTime = Timer.stamp();
+	var delayTime = Timer.stamp();
 	
 	override function update(elapsed:Float)
 	{
@@ -315,7 +315,7 @@ class FreeplayState extends MusicBeatState
 					loadingText.visible = loadingTextBG.visible = false;
 					scoreText.visible = scoreBG.visible = diffText.visible = bottomBG.visible = bottomText.visible = true;
 					
-					changeSelection(0, true);
+					changeSelection();
 					updateTexts(delayTime);
 				}
 
@@ -352,22 +352,17 @@ class FreeplayState extends MusicBeatState
 			
 			if(songs.length > 1)
 			{
-				if(FlxG.keys.justPressed.HOME)
+				if(FlxG.keys.justPressed.HOME || FlxG.keys.justPressed.END)
 				{
-					curSelected = 0;
+					curSelected = FlxG.keys.justPressed.END ? songs.length - 1 : 0;
 					changeSelection();
-					holdTime = 0;	
+					holdTime = spamTime = 0;
 				}
-				else if(FlxG.keys.justPressed.END)
-				{
-					curSelected = songs.length - 1;
-					changeSelection();
-					holdTime = 0;	
-				}
+
 				if (controls.UI_UP_P || controls.UI_DOWN_P)
 				{
-					changeSelection(controls.UI_UP ? -shiftMult : shiftMult);
-					holdTime = 0;
+					changeSelection(controls.UI_UP_P ? -shiftMult : shiftMult);
+					holdTime = spamTime = 0;
 				}
 
 				if (controls.UI_DOWN || controls.UI_UP)
@@ -377,7 +372,7 @@ class FreeplayState extends MusicBeatState
 						spamTime += elapsed;
 						var timeLimit:Float = 1 / interpolate(10, 30, (holdTime - 0.5) / 5, 2);
 
-						if (spamTime > timeLimit) {
+						while (spamTime > timeLimit) {
 							changeSelection(controls.UI_UP ? -shiftMult : shiftMult);
 							spamTime -= timeLimit;
 						}
@@ -385,10 +380,7 @@ class FreeplayState extends MusicBeatState
 				}
 
 				if(FlxG.mouse.wheel != 0)
-				{
-					FlxG.sound.play(Paths.sound('scrollMenu'), 0.2 * ClientPrefs.data.sfxVolume);
-					changeSelection(-shiftMult * FlxG.mouse.wheel, false);
-				}
+					changeSelection(-shiftMult * FlxG.mouse.wheel);
 			}
 
 			if (controls.UI_LEFT_P)
@@ -643,7 +635,7 @@ class FreeplayState extends MusicBeatState
 		lastDifficultyName = Difficulty.getString(curDifficulty, false);
 		
 		if (Difficulty.list.length > 1)
-			diffText.text = '< ' + Difficulty.getString(curDifficulty).toUpperCase() + ' >';
+			diffText.text = '< ${Difficulty.getString(curDifficulty).toUpperCase()} >';
 		else
 			diffText.text = Difficulty.getString(curDifficulty).toUpperCase();
 
@@ -653,14 +645,14 @@ class FreeplayState extends MusicBeatState
 	}
 
 	var lastDiff:Int;
-	function changeSelection(change:Int = 0, playSound:Bool = true)
+	function changeSelection(change:Int = 0, play:Bool = true)
 	{
 		if (player.playingMusic || grpSongs.length == 0 || iconGroup.length == 0)
 			return;
 
 		curSelected = FlxMath.wrap(curSelected + change, 0, songs.length-1);
 		_updateSongLastDifficulty();
-		if(playSound) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.sfxVolume);
+		if (play) FlxG.sound.play(Paths.sound('scrollMenu'), (FlxG.mouse.wheel != 0 ? 0.2 : 0.5) * ClientPrefs.data.sfxVolume);
 
 		// var newColor:Int = songs[curSelected].color;
 		if(songs[curSelected].color != intendedColor)

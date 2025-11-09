@@ -51,7 +51,7 @@ class StorageUtil
 
 			File.saveContent('saves/$fileName', fileData);
 			if (alert)
-				CoolUtil.showPopUp('$fileName has been saved.', "Success!");
+				CoolUtil.showPopUp('$fileName has been saved.\nCheck it out the path: "saves/$fileName"', "Success!");
 		}
 		catch (e:Exception)
 			if (alert)

@@ -148,6 +148,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	var nextAccept:Int = 5;
 	var selectHoldTime:Float = 0;
+	var selectHoldValue:Float = 0;
 	var holdTime:Float = 0;
 	var holdValue:Float = 0;
 
@@ -157,9 +158,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	var bindingText:Alphabet;
 	var bindingText2:Alphabet;
 
-	function getSpeed(hold:Float) {
-		hold =- 0.5;
-		return Math.max(0, hold * CoolUtil.interpolate(10, 30, hold / 5, 2));
+	function getSpeed(t:Float, d:Float) {
+		return d * CoolUtil.interpolate(10, 30, t / 5, 2);
 	}
 
 	override function update(elapsed:Float)
@@ -174,22 +174,35 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		if (controls.UI_UP_P || controls.UI_DOWN_P)
 		{
-			changeSelection(controls.UI_UP_P ? -1 : 1);
-			selectHoldTime = 0;
+			changeSelection(controls.UI_UP_P ? -1 : 1, true);
+			selectHoldTime = selectHoldValue = 0;
 		}
 
 		if (controls.UI_DOWN || controls.UI_UP)
 		{
-			var checkLastHold:Int = Std.int(getSpeed(selectHoldTime));
-			selectHoldTime += elapsed;
-			var checkNewHold:Int = Std.int(getSpeed(selectHoldTime));
+			var lastVal:Int = Std.int(selectHoldValue);
 
-			if(selectHoldTime > 0.5 && checkNewHold - checkLastHold >= 1)
-				changeSelection((checkNewHold - checkLastHold) * (controls.UI_UP ? -1 : 1), true);
+			selectHoldTime += elapsed;
+			selectHoldValue += getSpeed(selectHoldTime - 0.5, elapsed);
+			var newVal:Int = Std.int(selectHoldValue);
+
+			if(selectHoldTime > 0.5 && newVal - lastVal >= 1)
+				changeSelection((newVal - lastVal) * (controls.UI_UP ? -1 : 1), true);
+		}
+		
+		if(FlxG.keys.justPressed.HOME)
+		{
+			curSelected = 0;
+			changeSelection(0);
+		}
+		else if(FlxG.keys.justPressed.END)
+		{
+			curSelected = optionsArray.length - 1;
+			changeSelection(0);
 		}
 		
 		if (FlxG.mouse.wheel != 0)
-			changeSelection(-FlxG.mouse.wheel);
+			changeSelection(-FlxG.mouse.wheel, true);
 
 		if (controls.BACK) {
 			FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume);
@@ -263,6 +276,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 									default:
 								}
+								FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
 								updateTextFrom(curOption);
 								curOption.change();
 							}
@@ -570,18 +584,19 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	function changeSelection(delta:Float, usePrecision:Bool = false)
 	{
-		if (usePrecision)
-		{
+		var isWheel = FlxG.mouse.wheel != 0;
+		if (usePrecision) {
 			curSelected = FlxMath.wrap(curSelected + Std.int(delta), 0, optionsArray.length - 1);
+			FlxG.sound.play(Paths.sound('scrollMenu'), (isWheel ? 0.4 : 1) * ClientPrefs.data.sfxVolume);
 			curSelectedPartial = curSelected;
-			FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
-		}
-		else
-		{
+		} else {
 			curSelectedPartial = FlxMath.bound(curSelectedPartial + delta, 0, optionsArray.length - 1);
-			if(curSelected != Math.round(curSelectedPartial)) FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
+			if (curSelected != Math.round(curSelectedPartial)) {
+				FlxG.sound.play(Paths.sound('scrollMenu'), (isWheel ? 0.4 : 1) * ClientPrefs.data.sfxVolume);
+			}
 			curSelected = Math.round(curSelectedPartial);
 		}
+		
 		descText.text = optionsArray[curSelected].description;
 		descText.screenCenter(Y);
 		descText.y += 270;

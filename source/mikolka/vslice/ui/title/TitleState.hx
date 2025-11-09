@@ -61,11 +61,13 @@ class TitleState extends MusicBeatState
 		Paths.clearStoredMemory();
 		super.create();
 		Paths.clearUnusedMemory();
-
-		try {
-			Eseq.p('Console Available!\n');
-		} catch (e) {
-			Eseq.available = false;
+		
+		if (!initialized) {
+			try {
+				Eseq.p('Console Available!\n');
+			} catch (e) {
+				Eseq.available = false;
+			}
 		}
 		
 		startIntro();
@@ -80,7 +82,7 @@ class TitleState extends MusicBeatState
 
 	function startIntro()
 	{
-		trace("Enforcing log settings!");
+		#if debug trace("Enforcing log settings!"); #end
 		Logger.enforceLogSettings = true;
 
 		persistentUpdate = true;

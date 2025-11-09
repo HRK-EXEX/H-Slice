@@ -25,8 +25,8 @@ class OptionsState extends MusicBeatState
 		'Visuals',
 		'Gameplay',
 		'P-Slice Options',
-		#if TRANSLATIONS_ALLOWED 'Language', #end
-		#if (TOUCH_CONTROLS_ALLOWED || mobile) 'Mobile Options' #end
+		#if (TOUCH_CONTROLS_ALLOWED || mobile) 'Mobile Options', #end
+		'Export & Import Settings'
 	];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
@@ -78,10 +78,8 @@ class OptionsState extends MusicBeatState
 			case 'Mobile Options':
 				openSubState(new mobile.options.MobileOptionsSubState());
 			#end
-			#if TRANSLATIONS_ALLOWED
-			case 'Language':
-				openSubState(new options.LanguageSubState());
-			#end
+			case 'Export & Import Settings':
+				openSubState(new options.ShareSettingsSubState());
 		}
 	}
 
@@ -197,12 +195,12 @@ class OptionsState extends MusicBeatState
 
 		if (controls.UI_UP_P || controls.UI_DOWN_P)
 		{
-			changeSelection(controls.UI_UP_P ? -1 : 1,true);
+			changeSelection(controls.UI_UP_P ? -1 : 1, true);
 		}
 
 		if (FlxG.mouse.wheel != 0)
 		{
-			changeSelection(-FlxG.mouse.wheel);
+			changeSelection(FlxG.mouse.wheel, true, true);
 		}
 
 		// var lerpVal:Float = Math.max(0, Math.min(1, elapsed * 7.5));
@@ -239,17 +237,20 @@ class OptionsState extends MusicBeatState
 		else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
 	}
 	
-	function changeSelection(delta:Float = 0, usePrecision:Bool = false) {
+	function changeSelection(delta:Float = 0, usePrecision:Bool = false, isWheel:Bool = false)
+	{
 		if(usePrecision) {
-			if(delta != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
-			curSelected =  FlxMath.wrap(curSelected + Std.int(delta), 0, options.length - 1);
+			curSelected = FlxMath.wrap(curSelected + Std.int(delta), 0, options.length - 1);
 			curSelectedPartial = curSelected;
-		}
-		else {
+		} else {
 			curSelectedPartial = FlxMath.bound(curSelectedPartial + delta, 0, options.length - 1);
-			if(curSelected != Math.round(curSelectedPartial)) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 			curSelected = Math.round(curSelectedPartial);
 		}
+		
+		if (usePrecision || curSelected != Math.round(curSelectedPartial)) {
+			FlxG.sound.play(Paths.sound('scrollMenu'), (isWheel ? 0.4 : 1) * ClientPrefs.data.sfxVolume);
+		}
+		
 		for (num => item in grpOptions.members)
 		{
 			item.targetY = num - curSelectedPartial;
@@ -262,7 +263,6 @@ class OptionsState extends MusicBeatState
 				selectorRight.x = item.x + item.width + 35;
 			}
 		}
-		FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
 	}
 
 	override function destroy()

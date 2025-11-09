@@ -262,6 +262,11 @@ class StoryMenuState extends MusicBeatState
 		#end
 	}
 
+	var holdTime = 0.0;
+	var spamTime = 0.0;
+	var interpolate = CoolUtil.interpolate;
+	var shiftMult = 1;
+
 	override function update(elapsed:Float)
 	{
 		if (WeekData.weeksList.length < 1)
@@ -291,19 +296,30 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		// FlxG.watch.addQuick('font', scoreText.font);
+		shiftMult = FlxG.keys.pressed.SHIFT ? 3 : 1;
 
 		if (!movedBack && !selectedWeek)
 		{
 			var changeDiff = false;
-			if (controls.UI_UP_P)
+			if (controls.UI_DOWN_P || controls.UI_UP_P)
 			{
-				changeWeek(-1,true);
+				changeWeek(controls.UI_UP_P ? -shiftMult : shiftMult, true);
 				changeDiff = true;
+				holdTime = spamTime = 0.0;
 			}
-
-			if (controls.UI_DOWN_P)
+			
+			if (controls.UI_DOWN || controls.UI_UP)
 			{
-				changeWeek(1,true);
+				holdTime += elapsed;
+				if (holdTime > 0.5) {
+					spamTime += elapsed;
+					var timeLimit:Float = 1 / interpolate(10, 30, (holdTime - 0.5) / 5, 2);
+
+					while (spamTime > timeLimit) {
+						changeWeek(controls.UI_UP ? -shiftMult : shiftMult);
+						spamTime -= timeLimit;
+					}
+				}
 				changeDiff = true;
 			}
 
@@ -481,7 +497,7 @@ class StoryMenuState extends MusicBeatState
 		if (usePrecision)
 		{
 			if (change != 0)
-				FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+				FlxG.sound.play(Paths.sound('scrollMenu'), FlxG.mouse.wheel != 0 ? 0.4 : 1);
 			curWeek = FlxMath.wrap(curWeek + Std.int(change), 0, loadedWeeks.length - 1);
 			curSelectedPartial = curWeek;
 		}
@@ -489,7 +505,7 @@ class StoryMenuState extends MusicBeatState
 		{
 			curSelectedPartial = FlxMath.bound(curSelectedPartial + change, 0, loadedWeeks.length - 1);
 			if (curWeek != Math.round(curSelectedPartial))
-				FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+				FlxG.sound.play(Paths.sound('scrollMenu'), FlxG.mouse.wheel != 0 ? 0.4 : 1);
 			
 			curWeek = Math.round(curSelectedPartial);
 		}

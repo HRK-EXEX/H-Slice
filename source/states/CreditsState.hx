@@ -154,8 +154,16 @@ class CreditsState extends MusicBeatState
 
 	var quitting:Bool = false;
 	var holdTime:Float = 0;
+	var holdValue:Float = 0;
+
+	function getSpeed(t:Float, d:Float) {
+		return d * CoolUtil.interpolate(10, 30, t / 5, 2);
+	}
+
+	var shiftMult:Int = 1;
 	override function update(elapsed:Float)
 	{
+		shiftMult = FlxG.keys.pressed.SHIFT ? 3 : 1;
 		if (FlxG.sound.music.volume < 0.7 * ClientPrefs.data.bgmVolume)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed * ClientPrefs.data.bgmVolume;
@@ -165,37 +173,31 @@ class CreditsState extends MusicBeatState
 		{
 			if(creditsStuff.length > 1)
 			{
-				var shiftMult:Int = 1;
-				if(FlxG.keys.pressed.SHIFT) shiftMult = 3;
-
-				var upP = controls.UI_UP_P;
-				var downP = controls.UI_DOWN_P;
-
-				if (upP)
+				if (controls.UI_DOWN_P || controls.UI_UP_P)
 				{
-					changeSelection(-shiftMult);
-					holdTime = 0;
-				}
-				if (downP)
-				{
-					changeSelection(shiftMult);
-					holdTime = 0;
+					changeSelection(controls.UI_UP_P ? -shiftMult : shiftMult);
+					holdTime = holdValue = 0;
 				}
 
-				if(controls.UI_DOWN || controls.UI_UP)
+				if (controls.UI_DOWN || controls.UI_UP)
 				{
-					var checkLastHold:Int = Math.floor((holdTime - 0.5) * 10);
+					var lastVal:Int = Std.int(holdValue);
+
 					holdTime += elapsed;
-					var checkNewHold:Int = Math.floor((holdTime - 0.5) * 10);
+					holdValue += getSpeed(holdTime - 0.5, elapsed);
+					var newVal:Int = Std.int(holdValue);
 
-					if(holdTime > 0.5 && checkNewHold - checkLastHold > 0)
-					{
-						changeSelection((checkNewHold - checkLastHold) * (controls.UI_UP ? -shiftMult : shiftMult));
-					}
+					if(holdTime > 0.5 && newVal - lastVal >= 1)
+						changeSelection((newVal - lastVal) * (controls.UI_UP ? -shiftMult : shiftMult));
+				}
+				
+				if (FlxG.mouse.wheel != 0)
+				{
+					changeSelection(-FlxG.mouse.wheel);
 				}
 			}
 
-			if(controls.ACCEPT && (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)) {
+			if (controls.ACCEPT && (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)) {
 				CoolUtil.browserLoad(creditsStuff[curSelected][3]);
 			}
 			if (controls.BACK)
@@ -229,7 +231,7 @@ class CreditsState extends MusicBeatState
 	var moveTween:FlxTween = null;
 	function changeSelection(change:Int = 0)
 	{
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.sfxVolume);
+		FlxG.sound.play(Paths.sound('scrollMenu'), (FlxG.mouse.wheel != 0 ? 0.4 : 1) * ClientPrefs.data.sfxVolume);
 		do
 		{
 			curSelected = FlxMath.wrap(curSelected + change, 0, creditsStuff.length - 1);

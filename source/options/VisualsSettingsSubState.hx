@@ -366,7 +366,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	}
 
 	var lastSelected:Int = -1;
-	override function changeSelection(change:Float,usePrecision:Bool = false)
+	override function changeSelection(change:Float, usePrecision:Bool = false)
 	{
 		super.changeSelection(change,usePrecision);
 		if(lastSelected == curSelected) return;

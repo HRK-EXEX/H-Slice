@@ -2285,22 +2285,25 @@ class PlayState extends MusicBeatState
 	var columns:Int = 0;
 
 	// NPS
-	var npsTime:Int;
-	var npsMod:Bool = false;
-	var bothNpsAdd:Bool = false;
-	var nps:IntMap<Float> = new IntMap<Float>();
-	var opNps:IntMap<Float> = new IntMap<Float>();
-	var bfNpsVal:Float = 0;
-	var opNpsVal:Float = 0;
-	var bfNpsMax:Float = 0;
-	var opNpsMax:Float = 0;
-	var totalNpsVal:Float = 0;
-	var totalNpsMax:Float = 0;
-	var npsControlled:Int = 0;
-	var bfNpsAdd:Float = 0;
-	var opNpsAdd:Float = 0;
-	var bfSideHit:Float = 0;
-	var opSideHit:Float = 0;
+	var npsTime = 0;
+	var npsMod = false;
+	var bothNpsAdd = false;
+	var nps = new IntMap<Float>();
+	var opNps = new IntMap<Float>();
+	var bfNpsVal = 0.0;
+	var opNpsVal = 0.0;
+	var bfNpsMax = 0.0;
+	var opNpsMax = 0.0;
+	var totalNpsVal = 0.0;
+	var totalNpsMax = 0.0;
+	var npsControlled = 0;
+	var bfNpsAdd = 0.0;
+	var opNpsAdd = 0.0;
+	var bfSideHit = 0.0;
+	var opSideHit = 0.0;
+	var npsHoldTime = 0.0;
+	var npsHoldTimer = new FlxTimer();
+	var npsHoldTimerWorked = false;
 
 	var bfHitFrame:Float = 0;
 	var bfHitSus:Float = 0;
@@ -2532,7 +2535,11 @@ class PlayState extends MusicBeatState
 						doAnim(null, true);
 						bfSideHit -= bothNpsAdd ? bfSideHit : Math.max(opSideHit, bfSideHit);
 					}
-					bfNpsAdd = opNpsAdd = 0;
+					
+					if (!npsHoldTimerWorked) {
+						npsHoldTimer.start(FlxMath.bound(npsHoldTime, 0, 1), t -> bfNpsAdd = opNpsAdd = 0);
+						npsHoldTimerWorked = true;
+					}
 				}
 				opSideHit += opNpsAdd * globalElapsed;
 				bfSideHit += bfNpsAdd * globalElapsed;

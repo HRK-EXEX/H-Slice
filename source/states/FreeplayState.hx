@@ -20,6 +20,15 @@ import openfl.utils.Assets;
 
 import haxe.Json;
 
+typedef SongMetadata = {
+	name:String,
+	week:Int,
+	chara:String,
+	color:Int,
+	folder:String,
+	lastDifficulty:String
+}
+
 class FreeplayState extends MusicBeatState
 {
 	var songs:Array<SongMetadata> = [];
@@ -234,7 +243,7 @@ class FreeplayState extends MusicBeatState
 	function loadSong(index:Int) {
 		var song = songs[index];
 
-		var songText:Alphabet = new Alphabet(90, 320, song.songName, true);
+		var songText = new Alphabet(90, 320, song.name, true);
 		songText.targetY = index;
 		grpSongs.add(songText);
 
@@ -243,7 +252,7 @@ class FreeplayState extends MusicBeatState
 
 		Mods.currentModDirectory = song.folder;
 		
-		var icon:HealthIcon = new HealthIcon(song.songCharacter);
+		var icon = new HealthIcon(song.chara);
 		icon.sprTracker = songText;
 		
 		// too laggy with a lot of songs, so i had to recode the logic for it
@@ -260,7 +269,14 @@ class FreeplayState extends MusicBeatState
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
 	{
-		songs.push(new SongMetadata(songName, weekNum, songCharacter, color));
+		songs.push({
+			name: songName,
+			week: weekNum,
+			chara: songCharacter,
+			color: color,
+			folder: Mods.currentModDirectory ?? '',
+			lastDifficulty: null
+		});
 	}
 
 	function weekIsLocked(name:String):Bool
@@ -435,8 +451,8 @@ class FreeplayState extends MusicBeatState
 				FlxG.sound.music.volume = 0;
 
 				Mods.currentModDirectory = songs[curSelected].folder;
-				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
-				var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
+				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].name);
+				var poop:String = Highscore.formatSong(songs[curSelected].name.toLowerCase(), curDifficulty);
 
 				try {
 					if (ClientPrefs.data.disableGC) {
@@ -444,7 +460,7 @@ class FreeplayState extends MusicBeatState
 						MemoryUtil.collect(true);
 						MemoryUtil.disable();
 					}
-					Song.loadFromJson(poop, true, songs[curSelected].songName.toLowerCase());
+					Song.loadFromJson(poop, true, songs[curSelected].name.toLowerCase());
 				}
 				catch(e:haxe.Exception)
 				{
@@ -537,7 +553,7 @@ class FreeplayState extends MusicBeatState
 		else if (controls.ACCEPT && !player.playingMusic)
 		{
 			persistentUpdate = false;
-			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
+			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].name);
 			var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
 
 			try
@@ -589,7 +605,7 @@ class FreeplayState extends MusicBeatState
 		else if(controls.RESET #if TOUCH_CONTROLS_ALLOWED || touchPad.buttonY.justPressed #end && !player.playingMusic)
 		{
 			persistentUpdate = false;
-			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));
+			openSubState(new ResetScoreSubState(songs[curSelected].name, curDifficulty, songs[curSelected].chara));
 			FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.sfxVolume);
 		}
 
@@ -628,8 +644,8 @@ class FreeplayState extends MusicBeatState
 
 		curDifficulty = FlxMath.wrap(curDifficulty + change, 0, Difficulty.list.length-1);
 		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
-		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
+		intendedScore = Highscore.getScore(songs[curSelected].name, curDifficulty);
+		intendedRating = Highscore.getRating(songs[curSelected].name, curDifficulty);
 		#end
 
 		lastDifficultyName = Difficulty.getString(curDifficulty, false);
@@ -743,25 +759,5 @@ class FreeplayState extends MusicBeatState
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 		if (!FlxG.sound.music.playing && !stopMusicPlay)
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), ClientPrefs.data.bgmVolume);
-	}
-}
-
-class SongMetadata
-{
-	public var songName:String = "";
-	public var week:Int = 0;
-	public var songCharacter:String = "";
-	public var color:Int = -7179779;
-	public var folder:String = "";
-	public var lastDifficulty:String = null;
-
-	public function new(song:String, week:Int, songCharacter:String, color:Int)
-	{
-		this.songName = song;
-		this.week = week;
-		this.songCharacter = songCharacter;
-		this.color = color;
-		this.folder = Mods.currentModDirectory;
-		if(this.folder == null) this.folder = '';
 	}
 }

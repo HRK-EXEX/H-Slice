@@ -49,7 +49,7 @@ class ShareSettingsSubState extends BaseOptionsMenu {
 		addOption(option);
         
         #if !mobile
-        var option:Option = new Option('Use Clipboard instead saving file',
+        var option:Option = new Option('Use Clipboard Instead File',
 			"If checked, it copies the json data into clipboard instead exporting json file.",
 			'clipboard',
 			BOOL);

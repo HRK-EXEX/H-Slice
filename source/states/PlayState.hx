@@ -703,7 +703,10 @@ class PlayState extends MusicBeatState
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 		moveCameraSection();
 
-		healthBar = new Bar(0, FlxG.height * (!downScroll ? (cpuControlled && vsliceBotPlayPlace == 'Time Bar') ? 0.89 : 0.85 : 0.11), 'healthBar', () -> return healthLerp, 0, 2);
+		var barPlaceMultiplier = vsliceBotPlayPlace == 'Time Bar' ? 0.89 : 0.85;
+		if (downScroll) barPlaceMultiplier = 1 - barPlaceMultiplier;
+		
+		healthBar = new Bar(0, FlxG.height * barPlaceMultiplier, 'healthBar', () -> return healthLerp, 0, 2);
 		healthBar.screenCenter(X);
 		healthBar.leftToRight = false;
 		healthBar.scrollFactor.set();

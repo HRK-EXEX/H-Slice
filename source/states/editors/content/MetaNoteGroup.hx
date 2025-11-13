@@ -33,7 +33,6 @@ class MetaNoteGroup extends FlxTypedGroup<MetaNote>
             strumTime: chartNote[0],
             noteData: chartNote[1],
             holdLength: chartNote[2],
-            noteSkin: PlayState.SONG.arrowSkin,
             noteType: chartNote[3] ?? null,
         };
         return _ecyc_e.recycleNote(recycleData);

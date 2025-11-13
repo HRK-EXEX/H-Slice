@@ -272,7 +272,7 @@ class PreloadListSubState extends MusicBeatSubstate implements PsychUIEvent
 		outputTxt.text = txt;
 		outputTime = 3;
 		
-		if(isError) FlxG.sound.play(Paths.sound('cancelMenu'), 0.4);
+		if(isError) FlxG.sound.play(Paths.sound('cancelMenu'), 0.4 * ClientPrefs.data.sfxVolume);
 		else FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.sfxVolume);
 	}
 	

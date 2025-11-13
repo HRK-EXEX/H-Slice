@@ -4,7 +4,6 @@ import objects.Note;
 import shaders.RGBPalette;
 import flixel.util.FlxDestroyUtil;
 
-// maybe this class will deprecated
 class MetaNote extends Note
 {
 	public static var noteTypeTexts:Map<Int, FlxText> = [];

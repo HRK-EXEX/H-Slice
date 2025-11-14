@@ -19,7 +19,7 @@ class OptionsState extends MusicBeatState
 		'Note Colors',
 		'Controls',
 		'Adjust Delay and Combo',
-		#if desktop 'Video Rendering', #end
+		#if (desktop && !mac) 'Video Rendering', #end
 		'Optimizations',
 		'Graphics',
 		'Visuals',

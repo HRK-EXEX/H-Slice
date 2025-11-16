@@ -366,7 +366,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	}
 
 	var lastSelected:Int = -1;
-	override function changeSelection(change:Float,usePrecision:Bool = false)
+	override function changeSelection(change:Float, usePrecision:Bool = false)
 	{
 		super.changeSelection(change,usePrecision);
 		if(lastSelected == curSelected) return;
@@ -498,7 +498,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function changeNoteSkin(note:StrumNote)
 	{
-		var skin:String = Note.defaultNoteSkin;
+		var skin:String = Note.DEFAULT_NOTE_SKIN;
 		var customSkin:String = skin + Note.getNoteSkinPostfix();
 		if(Paths.fileExists('images/$customSkin.png', IMAGE)) skin = customSkin;
 

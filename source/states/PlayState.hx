@@ -706,7 +706,10 @@ class PlayState extends MusicBeatState
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 		moveCameraSection();
 
-		healthBar = new Bar(0, FlxG.height * (!downScroll ? (cpuControlled && vsliceBotPlayPlace == 'Time Bar') ? 0.89 : 0.85 : 0.11), 'healthBar', () -> return healthLerp, 0, 2);
+		var barPlaceMultiplier = vsliceBotPlayPlace == 'Time Bar' ? 0.89 : 0.85;
+		if (downScroll) barPlaceMultiplier = 1 - barPlaceMultiplier;
+		
+		healthBar = new Bar(0, FlxG.height * barPlaceMultiplier, 'healthBar', () -> return healthLerp, 0, 2);
 		healthBar.screenCenter(X);
 		healthBar.leftToRight = false;
 		healthBar.scrollFactor.set();
@@ -1942,32 +1945,32 @@ class PlayState extends MusicBeatState
 
 			showProgress(true);
 
-			Sys.println('\n[ --- "${SONG.song.toUpperCase()}" CHART INFO --- ]');
+			Eseq.pln('\n[ --- "${SONG.song.toUpperCase()}" CHART INFO --- ]');
 			
 			var takenTime = CoolUtil.getNanoTime() - loadTime;
 			var takenNoteTime = CoolUtil.getNanoTime() - loadNoteTime;
 
-			Sys.println('Loaded ${numberDelimit ? formatD(notes) : Std.string(notes)} notes!\n' + 
-						'Sustain notes amount: ${numberDelimit ? formatD(sustainTotalCnt) : Std.string(sustainTotalCnt)}\n' + 
-						'Taken time: ${numFormat(takenTime, 6)} sec\n' + 
-						'Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}'
+			Eseq.pln('Loaded ${numberDelimit ? formatD(notes) : Std.string(notes)} notes!\n' + 
+					'Sustain notes amount: ${numberDelimit ? formatD(sustainTotalCnt) : Std.string(sustainTotalCnt)}\n' + 
+					'Taken time: ${numFormat(takenTime, 6)} sec\n' + 
+					'Average NPS in loading: ${numFormat(notes / takenNoteTime, 3)}'
 			);
 
 			if (skipGhostNotes) {
 				if (ghostNotesCaught > 0)
-					Sys.println('Overlapped Notes Cleared: $ghostNotesCaught');
+					Eseq.pln('Overlapped Notes Cleared: $ghostNotesCaught');
 				else {
-					Sys.println('WOW! There is no overlapped notes. Great charting!');
+					Eseq.pln('WOW! There is no overlapped notes. Great charting!');
 				}
 			}
 		
-			Sys.println('Merging Notes...');
+			Eseq.pln('Merging Notes...');
 			for (usn in unspawnSustainNotes)
 				unspawnNotes.push(usn);
 			
 			unspawnSustainNotes.resize(0);
 
-			Sys.println('Sorting Notes...');
+			Eseq.pln('Sorting Notes...');
 			ArraySort.sort(unspawnNotes, sortByTime);
 		} else {
 			trace("Unspawned Notes are omitted since they are already in the memory!");
@@ -1979,7 +1982,7 @@ class PlayState extends MusicBeatState
 				makeEvent(event, i);
 
 		generatedMusic = true;
-		Sys.println('Ready to PLAY!');
+		Eseq.pln('Ready to PLAY!');
 	}
 
 	// called only once per different event (Used for precaching)
@@ -2309,22 +2312,25 @@ class PlayState extends MusicBeatState
 	var columns:Int = 0;
 
 	// NPS
-	var npsTime:Int;
-	var npsMod:Bool = false;
-	var bothNpsAdd:Bool = false;
-	var nps:IntMap<Float> = new IntMap<Float>();
-	var opNps:IntMap<Float> = new IntMap<Float>();
-	var bfNpsVal:Float = 0;
-	var opNpsVal:Float = 0;
-	var bfNpsMax:Float = 0;
-	var opNpsMax:Float = 0;
-	var totalNpsVal:Float = 0;
-	var totalNpsMax:Float = 0;
-	var npsControlled:Int = 0;
-	var bfNpsAdd:Float = 0;
-	var opNpsAdd:Float = 0;
-	var bfSideHit:Float = 0;
-	var opSideHit:Float = 0;
+	var npsTime = 0;
+	var npsMod = false;
+	var bothNpsAdd = false;
+	var nps = new IntMap<Float>();
+	var opNps = new IntMap<Float>();
+	var bfNpsVal = 0.0;
+	var opNpsVal = 0.0;
+	var bfNpsMax = 0.0;
+	var opNpsMax = 0.0;
+	var totalNpsVal = 0.0;
+	var totalNpsMax = 0.0;
+	var npsControlled = 0;
+	var bfNpsAdd = 0.0;
+	var opNpsAdd = 0.0;
+	var bfSideHit = 0.0;
+	var opSideHit = 0.0;
+	var npsHoldTime = 0.0;
+	var npsHoldTimer = new FlxTimer();
+	var npsHoldTimerWorked = false;
 
 	var bfHitFrame:Float = 0;
 	var bfHitSus:Float = 0;
@@ -2557,7 +2563,11 @@ class PlayState extends MusicBeatState
 						doAnim(null, true);
 						bfSideHit -= bothNpsAdd ? bfSideHit : Math.max(opSideHit, bfSideHit);
 					}
-					bfNpsAdd = opNpsAdd = 0;
+					
+					if (!npsHoldTimerWorked) {
+						npsHoldTimer.start(FlxMath.bound(npsHoldTime, 0, 1), t -> bfNpsAdd = opNpsAdd = 0);
+						npsHoldTimerWorked = true;
+					}
 				}
 				opSideHit += opNpsAdd * globalElapsed;
 				bfSideHit += bfNpsAdd * globalElapsed;
@@ -3482,11 +3492,11 @@ class PlayState extends MusicBeatState
 		if (ffmpegMode && !previewRender) {
 			if (cancelCount < 3) {
 				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume).pitch = cancelCount * 0.2 + 1;
-				Sys.println(3 - cancelCount + " left to escape the rendering.");
+				Eseq.pln(3 - cancelCount + " left to escape the rendering.");
 				++cancelCount;
 			} else {
 				FlxG.fixedTimestep = false;
-				Sys.println("you escaped the rendering succesfully.");
+				Eseq.pln("you escaped the rendering succesfully.");
 				finishSong();
 			}
 
@@ -3494,7 +3504,7 @@ class PlayState extends MusicBeatState
 			pauseTimer = new FlxTimer().start(3, _ -> {
 				cancelCount = 0;
 				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume).pitch = 0.5;
-				Sys.println("Cancelled to escape rendering.\nWait build up for video.");
+				Eseq.pln("Cancelled to escape rendering.\nWait build up for video.");
 			});
 			
 			return;
@@ -4771,11 +4781,11 @@ class PlayState extends MusicBeatState
 				{ // I can't do a filter here, that's kinda awesome
 					var canHit:Bool = (n != null && !strumsBlocked[n.noteData] && n.canBeHit && n.mustPress && !n.tooLate && !n.wasGoodHit && !n.blockHit);
 
-					if (canHit && n.isSustainNote)
+					if (canHit && n.isSustainNote && n.strumTime < Conductor.songPosition)
 					{
-						var released:Bool = !holdArray[n.noteData];
+						// var released:Bool = !;
 
-						if (!released) {
+						if (holdArray[n.noteData]) {
 							goodNoteHit(n);
 						}
 					}

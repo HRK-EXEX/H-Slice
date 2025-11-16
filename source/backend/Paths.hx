@@ -40,9 +40,7 @@ class Paths
 	inline public static var VIDEO_EXT = "mp4";
 
 	public static var defaultNoteStuff:Array<Dynamic> = [];
-
 	public static var defaultSkin:String = 'noteSkins/NOTE_assets';
-	public static var defaultNoteSprite:FlxSprite;
 
 	public static var noteSkinFramesMap:Map<String, FlxFramesCollection> = new Map();
 	public static var noteSkinAnimsMap:Map<String, FlxAnimationController> = new Map();

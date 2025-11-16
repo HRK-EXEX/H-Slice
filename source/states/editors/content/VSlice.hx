@@ -264,7 +264,7 @@ class VSlice
 
 			Reflect.setField(swagSong, 'artist', metadata.artist);
 			Reflect.setField(swagSong, 'charter', metadata.charter);
-			Reflect.setField(swagSong, 'generatedBy', 'H-Slice - PE v${MainMenuState.psychEngineVersion} - Chart Editor V-Slice Importer');
+			Reflect.setField(swagSong, 'generatedBy', 'H-Slice v${MainMenuState.hrkVersion} - PE v${MainMenuState.psychEngineVersion} - Chart Editor V-Slice Importer');
 			songDifficulties.set(diff, swagSong);
 		}
 		var pack:PsychPackage = {difficulties: songDifficulties, events: null};
@@ -329,7 +329,7 @@ class VSlice
 		}
 
 		var notes:Array<VSliceNote> = [];
-		var generatedBy:String = 'H-Slice - PE v${MainMenuState.psychEngineVersion} - Chart Editor V-Slice Exporter';
+		var generatedBy:String = 'H-Slice v${MainMenuState.hrkVersion} - PE v${MainMenuState.psychEngineVersion} - Chart Editor V-Slice Exporter';
 		var timeChanges:Array<VSliceTimeChange> = [];
 		
 		var time:Float = 0;

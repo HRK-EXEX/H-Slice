@@ -1,5 +1,6 @@
 package options;
 
+import objects.CheckboxThingie;
 import flixel.system.ui.FlxSoundTray;
 import backend.FFMpeg;
 import flixel.input.gamepad.FlxGamepad;
@@ -10,46 +11,49 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 	var bitOption:Option;
 	var gcRateOption:Option;
 	var testOption:Option;
+	var testChkbox:CheckboxThingie;
 	
-	var missingTextBG:FlxSprite;
-	var missingText:FlxText;
+	var messageTextBG:FlxSprite;
+	var messageText:FlxText;
+	
+    var offTimer:FlxTimer = new FlxTimer();
 	
 	public static final codecList:Array<String> = [
 		'H.264',
-		'H.264 (QSV)',
-		'H.264 (NVENC)',
-		'H.264 (AMF)',
-		'H.264 (VAAPI)',
+		'H.264 QSV',
+		'H.264 NVENC',
+		'H.264 AMF',
+		'H.264 VAAPI',
 		'H.265',
-		'H.265 (QSV)',
-		'H.265 (NVENC)',
-		'H.265 (AMF)',
-		'H.265 (VAAPI)',
+		'H.265 QSV',
+		'H.265 NVENC',
+		'H.265 AMF',
+		'H.265 VAAPI',
 		'VP8',
-		'VP8 (VAAPI)',
+		'VP8 VAAPI',
 		'VP9',
-		'VP9 (VAAPI)',
+		'VP9 VAAPI',
 		'AV1',
-		'AV1 (NVENC for RTX40)'
+		'AV1 NVENC'
 	];
 	
     public static final codecMap:Map<String, String> = [
         'H.264' => 'libx264',
-        'H.264 (QSV)' => 'h264_qsv',
-        'H.264 (NVENC)' => 'h264_nvenc',
-        'H.264 (AMF)' => 'h264_amf',
-        'H.264 (VAAPI)' => 'h264_vaapi',
+        'H.264 QSV' => 'h264_qsv',
+        'H.264 NVENC' => 'h264_nvenc',
+        'H.264 AMF' => 'h264_amf',
+        'H.264 VAAPI' => 'h264_vaapi',
         'H.265' => 'libx265',
-        'H.265 (QSV)' => 'hevc_qsv',
-        'H.265 (NVENC)' => 'hevc_nvenc',
-        'H.265 (AMF)' => 'hevc_amf',
-        'H.265 (VAAPI)' => 'hevc_vaapi',
+        'H.265 QSV' => 'hevc_qsv',
+        'H.265 NVENC' => 'hevc_nvenc',
+        'H.265 AMF' => 'hevc_amf',
+        'H.265 VAAPI' => 'hevc_vaapi',
         'VP8' => 'libvpx',
-        'VP8 (VAAPI)' => 'libvpx_vaapi',
+        'VP8 VAAPI' => 'libvpx_vaapi',
         'VP9' => 'libvp9',
-        'VP9 (VAAPI)' => 'libvp9_vaapi',
+        'VP9 VAAPI' => 'libvp9_vaapi',
         'AV1' => 'libsvtav1',
-        'AV1 (NVENC for RTX40)' => 'av1_nvenc'
+        'AV1 NVENC' => 'av1_nvenc'
     ];
 
 	public function new()
@@ -61,13 +65,13 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		title = 'Game Renderer';
 		rpcTitle = 'Game Renderer Settings Menu'; //for Discord Rich Presence
 
-		//Working in Progress!
-        var option:Option = new Option('Working in Progress', //Name
-			"Make changes at your own risk.", //Description
-			'openDoor', //Save data variable name
-			STRING,
-			['!']); //Variable type
-		addOption(option);
+		// Working in Progress!
+        // var option:Option = new Option('Working in Progress', //Name
+		// 	"Make changes at your own risk.", //Description
+		// 	'openDoor', //Save data variable name
+		// 	STRING,
+		// 	['!']); //Variable type
+		// addOption(option);
 
         var option:Option = new Option('Use Game Renderer',
 			"If checked, It renders a video.\nAnd It forces turn on Botplay and disable debug menu key.",
@@ -176,21 +180,24 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 			'dummy',
 			BOOL);
 		option.onChange = testRender;
+        option.setValue(false);
 		addOption(option);
 
         super();
 		
-		missingTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		missingTextBG.alpha = 0.6;
-		missingTextBG.visible = false;
-		add(missingTextBG);
+		messageTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		messageTextBG.alpha = 0.6;
+		messageTextBG.visible = false;
+		add(messageTextBG);
 		
-		missingText = new FlxText(50, 0, FlxG.width - 100, '', 24);
-		missingText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		missingText.scrollFactor.set();
-		missingText.visible = false;
-		missingText.antialiasing = ClientPrefs.data.antialiasing;
-		add(missingText);
+		messageText = new FlxText(50, 0, FlxG.width - 100, '', 24);
+		messageText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		messageText.scrollFactor.set();
+		messageText.visible = false;
+		messageText.antialiasing = ClientPrefs.data.antialiasing;
+		add(messageText);
+
+		testChkbox = checkboxGroup.members.filter(o -> o.ID == optionsArray.indexOf(testOption))[0];
     }
 
 	function onChangeGCRate()
@@ -218,7 +225,7 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		var video:FFMpeg = new FFMpeg();
 		var backupCodec = ClientPrefs.data.codec;
 		var result:Bool = true;
-		var output:String = 'FPS: ${ClientPrefs.data.targetFPS}, Mode: ${ClientPrefs.data.encodeMode}\n';
+		var output:String = 'FPS: ${ClientPrefs.data.targetFPS}, Mode: ${ClientPrefs.data.encodeMode}, ${ClientPrefs.data.encodeMode == "CRF/CQP" ? 'Quality: ${ClientPrefs.data.constantQuality}' : 'Bitrate: ${ClientPrefs.data.bitrate} Mbps'}\n';
 		var noFFMpeg:Bool = false;
 		var message:String = "";
 
@@ -268,34 +275,43 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 
 		output = output.substring(0, output.length - 1);
 
-		missingText.visible = true;
-		missingTextBG.visible = true;
+		messageText.visible = true;
+		messageTextBG.visible = true;
 
 		if (noFFMpeg) {
-			missingText.text = "ERROR WHILE TESTING FFMPEG FEATURE:\nYou don't have 'FFMpeg.exe' in same Folder as H-Slice.";
+			messageText.text = "ERROR WHILE TESTING FFMPEG FEATURE:\nYou don't have 'FFMpeg.exe' in same Folder as H-Slice.";
 			
 			FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume);
 		} else {
-			missingText.text = 'Test simple result: $cnt/$maxLength codecs passed.\n\n' + output;
-			// Sys.println('Test simple result: $cnt/$maxLength codecs passed.');
-			// if (cnt != maxLength) 
-			// 	Sys.println('Check avail_codecs.txt for details.');
+			messageText.text = 'Test simple result: $cnt/$maxLength codecs passed.\n\n' + output;
 		}
 
-		missingText.screenCenter(Y);
+		messageText.screenCenter(Y);
 
 		// CoolUtil.deleteDirectoryWithFiles(video.target);
 		// File.saveContent("avail_codecs.txt", output);
 		FlxG.sound.play(Paths.sound('soundtray/VolMAX'), ClientPrefs.data.sfxVolume);
 		ClientPrefs.data.codec = backupCodec;
+
+		var o = curOption;
+		o.setValue(true);
+		reloadCheckboxes();
+		
+		if (offTimer.active) offTimer.cancel();
+		offTimer.start(t -> {
+			o.setValue(false);
+			reloadCheckboxes();
+		});
 	}
 
 	override function changeSelection(delta:Float, usePrecision:Bool = false) {
 		super.changeSelection(delta, usePrecision);
 		
-		if (missingText != null) {
-			missingText.visible = false;
-			missingTextBG.visible = false;
+		if (messageText != null) {
+			if (messageText.visible || messageTextBG.visible) {
+				messageText.visible = false;
+				messageTextBG.visible = false;
+			}
 		}
 	}
 }

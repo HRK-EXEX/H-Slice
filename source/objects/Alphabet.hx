@@ -298,7 +298,7 @@ class AlphaCharacter extends FlxSprite
 
 	public var image(default, set):String;
 
-	public static var allLetters:Map<String, Null<Letter>>;
+	public static var allLetters:Map<String, Null<Letter>> = new Map();
 
 	public static function loadAlphabetData(request:String = 'alphabet')
 	{
@@ -306,10 +306,8 @@ class AlphaCharacter extends FlxSprite
 		if(!NativeFileSystem.exists(path))
 			path = Paths.getPath('images/alphabet.json');
 
-		allLetters = new Map<String, Null<Letter>>();
 		try
 		{
-
 			var data:Dynamic = Json.parse(NativeFileSystem.getContent(path));
 
 			if(data.allowed != null && data.allowed.length > 0)

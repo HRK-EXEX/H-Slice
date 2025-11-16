@@ -130,7 +130,6 @@ import states.InitState;
 	public var badWindow:Int = 135;
 	public var safeFrames:Float = 10;
 	public var f11Shortcut:Bool = false;
-	public var fpsRework:Bool = false;
 	public var cacheOnCPU:Bool = #if android false #else true #end;
 
 	// V-Slice Settings
@@ -149,6 +148,12 @@ import states.InitState;
 	public var vsliceLegacyBar:Bool = false;
 	public var vsliceNaughtyness:Bool = #if mobile false #else true #end;
 	public var vsliceForceNewTag:Bool = false;
+
+	// Export & Import JSON Options
+	public var doExport:Bool = false;
+	public var doImport:Bool = false;
+	public var formatJS:Bool = true;
+	public var clipboard:Bool = false;
 
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [

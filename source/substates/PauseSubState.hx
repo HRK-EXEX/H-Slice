@@ -459,20 +459,23 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.seenCutscene = false;
 					//! not yet
 					Mods.loadTopMod();
+					FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = ClientPrefs.data.vsliceFreeplay;
+
 					if (PlayState.isStoryMode)
 					{
 						PlayState.storyPlaylist = [];
-						openSubState(new StickerSubState(null, (sticker) -> new StoryMenuState(sticker)));
+						if (ClientPrefs.data.vsliceFreeplay) {
+							openSubState(new StickerSubState(null, sticker -> new StoryMenuState(sticker)));
+						} else {
+							MusicBeatState.switchState(new StoryMenuState());
+							FlxG.sound.playMusic(Paths.music('freakyMenu'), ClientPrefs.data.bgmVolume);
+						}
 					}
 					else
 					{
 						if (ClientPrefs.data.vsliceFreeplay) {
-							FlxTransitionableState.skipNextTransIn = true;
-							FlxTransitionableState.skipNextTransOut = true;
-							openSubState(new StickerSubState(null, (sticker) -> NewFreeplayState.build(null, sticker)));
+							openSubState(new StickerSubState(null, sticker -> NewFreeplayState.build(null, sticker)));
 						} else {
-							FlxTransitionableState.skipNextTransIn = false;
-							FlxTransitionableState.skipNextTransOut = false;
 							MusicBeatState.switchState(new FreeplayState());
 							FlxG.sound.playMusic(Paths.music('freakyMenu'), ClientPrefs.data.bgmVolume);
 						}

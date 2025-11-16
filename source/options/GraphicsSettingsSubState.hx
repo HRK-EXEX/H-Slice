@@ -152,7 +152,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 	}
 	#end
 
-	override function changeSelection(change:Float,usePrecision:Bool = false) 
+	override function changeSelection(change:Float, usePrecision:Bool = false) 
 	{
 		super.changeSelection(change,usePrecision);
 		boyfriend.visible = (antialiasingOption == curSelected);

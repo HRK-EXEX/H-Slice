@@ -79,13 +79,33 @@ class DesktopMenuState extends FlxBasic
         changeItem();
     }
 
+	var holdTime = 0.0;
+	var spamTime = 0.0;
+	var interpolate = CoolUtil.interpolate;
+	var shiftMult = 1;
 
 	override function update(elapsed:Float)
 	{
+		shiftMult = FlxG.keys.pressed.SHIFT ? 3 : 1;
 		if (!selectedSomethin)
 		{
-			if (host.controls.UI_UP_P || host.controls.UI_DOWN_P)
+			if (host.controls.UI_UP_P || host.controls.UI_DOWN_P) {
 				changeItem(host.controls.UI_UP ? -1 : 1);
+				holdTime = spamTime = 0;
+			}
+			
+			if (host.controls.UI_UP || host.controls.UI_DOWN) {
+				holdTime += elapsed;
+				if (holdTime > 0.5) {
+					spamTime += elapsed;
+					var timeLimit:Float = 1 / interpolate(10, 30, (holdTime - 0.5) / 5, 2);
+
+					while (spamTime > timeLimit) {
+						changeItem(host.controls.UI_UP ? -1 : 1);
+						spamTime -= timeLimit;
+					}
+				}
+			}
 			
 			if (FlxG.mouse.wheel != 0)
 				changeItem(-FlxG.mouse.wheel);
@@ -189,8 +209,7 @@ class DesktopMenuState extends FlxBasic
 
 	function changeItem(huh:Int = 0)
 	{
-		if (huh != 0)
-			FlxG.sound.play(Paths.sound('scrollMenu'));
+		if (huh != 0) FlxG.sound.play(Paths.sound('scrollMenu')).volume = (FlxG.mouse.wheel != 0 ? 0.4 : 1) * ClientPrefs.data.sfxVolume;
 		menuItems.members[curSelected].animation.play('idle');
 		menuItems.members[curSelected].updateHitbox();
 		menuItems.members[curSelected].screenCenter(X);

@@ -411,6 +411,79 @@ class PlayState extends MusicBeatState
 	var sortingWay = 0;
 	var commaImg = false;
 
+	var freeBotplayTxt:Array<String> = [
+		"BOTPRAY",
+		"Skill issue mode",
+		"Ready or die",
+		"Bambi black midis be like:",
+		"You fish",
+		"Pumpkin",
+		"I hate garbage collector",
+		"Someone calling 911",
+		"Heaven or hell",
+		"I'll give u the gift called empty",
+		"Imagine 1 billion notes fnf chart",
+		"Run away or someone comes",
+		"Disguised face",
+		"Is rainbow eyesore a drug",
+		"Divived by 0 equals 42",
+		"It's just a text",
+		"Wait, who are you",
+		"Hello, visitor!",
+		"When botplay lags:",
+		"Amogus",
+		"Is it impossible?",
+		"Testing... just testing...",
+		"Imagine 1 tillion notes fnf chart",
+		"Gf neck is getting bonk",
+		"It's a benchmark",
+		"B0TPL4Y",
+		"8 800 555 3535",
+		"Never gonna give you up",
+		"Spamming spamming spamming",
+		"Beware memory leaks",
+		"When would it can multi-threaded processing",
+		"Help me, I have programming skill issue",
+		"Demon is inside bot",
+		"Don't worry, You can beat this",
+		"It's not overcharted, You're just bad",
+		":)",
+		">:(",
+		"+++++++++[>++++++++<-]>------.+++++++++++++.+++++.----.----.-----------.<+++++[>+++++<-]>-.",
+		"TXkgZXZlcnkgdGVjaG5pcXVlIGhhdmUgc3RvbGVuIGJ5IG90aGVyIHByb2dyYW1tZXJz",
+		"...---...",
+		"Dark, Darker, Yet Darker",
+		"Mesmerizing",
+		"Your PC is screaming",
+		"NOTPLAY",
+		"Coming 2027",
+		"Mango",
+		"127.0.0.1:6000",
+		"Break Infinity!",
+		"Break Eternity!",
+		"Break Unity/Reality!",
+		"Recursion is Power",
+		"YOUR TAKING TOO LONG",
+		"YOUR LONG",
+		"YOUR DONKEY KONG",
+		"Dave and baldi are same game btw",
+		"You felt deja vu",
+		"No way...",
+		"Amen break core",
+	];
+
+	var rickRolled:Bool = false;
+	final rickRollTxt:Array<String> = [
+		"Never gonna give you up",
+		"Never gonna let you down",
+		"Never gonna run around",
+		"and desert you",
+		"Never gonna make you cry",
+		"Never gonna say goodbye",
+		"Never gonna tell a lie",
+		"and hurt you"
+	];
+
 	public static var canResync:Bool = false;
 
 	override public function create()
@@ -733,7 +806,7 @@ class PlayState extends MusicBeatState
 		scoreTxt.borderSize = 1.25;
 		scoreTxt.visible = !ClientPrefs.data.hideHud;
 		scoreTxt.antialiasing = ClientPrefs.data.antialiasing;
-		updateScore(false);
+		updateScore();
 		uiGroup.add(scoreTxt);
 		
 		infoTxt = new FlxText(0, downScroll ? healthBar.y + 64 : healthBar.y - 48, FlxG.width, "", 32);
@@ -760,6 +833,10 @@ class PlayState extends MusicBeatState
 		botplayTxt.visible = cpuControlled;
 		botplayTxt.antialiasing = ClientPrefs.data.antialiasing;
 		uiGroup.add(botplayTxt);
+
+		if (ClientPrefs.data.randomText && FlxG.random.bool(ClientPrefs.data.randomChance * 100) && !ffmpegMode){
+			botplayTxt.text = FlxG.random.getObject(freeBotplayTxt);
+		}
 
 		uiGroup.cameras = [camHUD];
 		notesGroup.cameras = [camHUD];
@@ -2267,6 +2344,7 @@ class PlayState extends MusicBeatState
 	var hit:Int = 0;
 	var skipHit:Int = 0;
 	var globalNoteHit:Bool = false;
+	var globalFrameHit:Bool = false;
 	var daHit:Bool = false;
 	var bfHit:Bool = false;
 	var noteDataInfo:Int = 0;
@@ -2388,6 +2466,14 @@ class PlayState extends MusicBeatState
 			botplaySine += 180 * globalElapsed;
 			botplayTxt.alpha = 1 - Math.sin(Math.PI * botplaySine / 180);
 			botplaySineCnt = Math.floor((botplaySine + 270) / 360);
+
+			if (botplayTxt.text == "Never gonna give you up" && !ffmpegMode) {
+				rickRolled = true;
+			}
+			
+			if (rickRolled) {
+				botplayTxt.text = rickRollTxt[botplaySineCnt & 7];
+			}
 			
 			#if desktop
 			if (ffmpegMode) {
@@ -2495,7 +2581,10 @@ class PlayState extends MusicBeatState
 
 		updateIconsScale(globalElapsed);
 		updateIconsPosition();
-		updateScoreText();
+
+		if (bfHit || daHit) {
+			updateScoreText();
+		}
 		
 		if (!overHealth) healthLerp = healthLerper();
 		else {
@@ -2864,19 +2953,19 @@ class PlayState extends MusicBeatState
 		iconP2.x = barPos - (150 * iconP2.scale.x) / 2 - 52;
 	}
 
-	var limitCount:Int = 0;
-	var swapNote:Note = null;
+	var limitCount = 0;
+	var swapNote:Note;
 	var skipOpCNote:CastNote;
 	var skipBfCNote:CastNote;
 	var skipNoteSplash:Note = new Note();
-	var showAgain:Bool = false;
-	var isCanPass:Bool = false;
-	var isDisplay:Bool = false;
-	var timeLimit:Bool = false;
-	var noteJudge:Bool = false;
+	var showAgain = false;
+	var isCanPass = false;
+	var isDisplay = false;
+	var timeLimit = false;
+	var noteJudge = false;
 
-	var castHold:Bool = false;
-	var castMust:Bool = false;
+	var castHold = false;
+	var castMust = false;
 	var fixedPosition:Float = 0;
 	var iDist:Array<Float> = [];
 	var lDist:Array<Float> = [];
@@ -2884,7 +2973,23 @@ class PlayState extends MusicBeatState
 	var availNoteData:Int = 0;
 
 	var susEnds:Int = 0;
+
+	inline function initSpawnInfo(casted:CastNote) {
+		noteDataInfo = casted.noteData;
+		castHold = toBool(noteDataInfo & (1<<9));
+		castMust = toBool(noteDataInfo & (1<<8));
+		availNoteData = (noteDataInfo + (castMust ? 4 : 0)) & 255;
+		prevSus[availNoteData] = currSus[availNoteData];
+		currSus[availNoteData] = castHold;
+		
+		shownTime = showNotes ? castHold ? Math.max(spawnTime / songSpeed, globalElapsed * 1000) : spawnTime / songSpeed : 0;
+		shownRealTime = shownTime * 0.001;
+		
+		isDisplay = casted.strumTime - fixedPosition < shownTime;
+	}
 	
+	var currSus:Array<Bool> = [];
+	var prevSus:Array<Bool> = [];
 	public function noteSpawn()
 	{
 		timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
@@ -2899,16 +3004,7 @@ class PlayState extends MusicBeatState
 			fixedPosition = Conductor.songPosition - ClientPrefs.data.noteOffset;
 			
 			// for initalize
-			noteDataInfo = targetNote.noteData;
-			castHold = toBool(noteDataInfo & (1<<9));
-			castMust = toBool(noteDataInfo & (1<<8));
-			availNoteData = (noteDataInfo + (castMust ? 4 : 0)) & 255;
-			prevSus[availNoteData] = currSus[availNoteData] ?? false;
-			currSus[availNoteData] = castHold;
-
-			shownTime = showNotes ? castHold ? Math.max(spawnTime / songSpeed, globalElapsed * 1000) : spawnTime / songSpeed : 0;
-			shownRealTime = shownTime * 0.001;
-			isDisplay = targetNote.strumTime - fixedPosition < shownTime;
+			initSpawnInfo(targetNote);
 
 			while (isDisplay && limitCount < limitNotes)
 			{
@@ -3000,22 +3096,9 @@ class PlayState extends MusicBeatState
 					if (castMust) skipBfCNote = targetNote; else skipOpCNote = targetNote;
 				}
 				
-				++totalCnt;
-				if (unspawnNotes.length > totalCnt) targetNote = unspawnNotes[totalCnt]; else break;
-				
-				noteDataInfo = targetNote.noteData;
-				castHold = toBool(noteDataInfo & (1<<9));
-				castMust = toBool(noteDataInfo & (1<<8));
-				availNoteData = (noteDataInfo + (castMust ? 4 : 0)) & 255;
-				prevSus[availNoteData] = currSus[availNoteData];
-				currSus[availNoteData] = castHold;
-				
-				if (showNotes) {
-					shownTime = castHold ? Math.max(spawnTime / songSpeed, globalElapsed * 1000) : spawnTime / songSpeed;
-					shownRealTime = shownTime * 0.001;
-				}
-				
-				isDisplay = targetNote.strumTime - fixedPosition < shownTime;
+				if (unspawnNotes.length > ++totalCnt) targetNote = unspawnNotes[totalCnt]; else break;
+
+				initSpawnInfo(targetNote);
 			}
 		}
 		safeTime = ((nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp()) - timeout) / shownRealTime * 100;
@@ -3032,8 +3115,6 @@ class PlayState extends MusicBeatState
 	var processedReal:Int = 0;
 	var processedRealTimer:Float = 0;
 	var processedRealElapsed:Float = 0;
-	var currSus:Array<Bool> = [];
-	var prevSus:Array<Bool> = [];
 	public function noteUpdate()
 	{
 		if (generatedMusic)

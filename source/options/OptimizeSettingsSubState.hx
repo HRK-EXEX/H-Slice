@@ -34,7 +34,7 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
         var option:Option = new Option('Show Notes',
-			"If unchecked, appearTime sets to 0.\nAll notes will be processed as skipped notes.\nBotplay is force-enabled.",
+			"If unchecked, appearTime sets to 0.\nAll notes will be processed as skipped notes.\nBotplay is forcibly enabled.",
 			'showNotes',
 			BOOL);
 		addOption(option);
@@ -84,7 +84,7 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Invisible overlapped notes:',
-			"I thought It would be nice because I implemented skipping feature\nI won't care about cheating anymore",
+			"It hides the overlapped note which doesn't notice easily by pixels.",
 			'hideOverlapped',
 			FLOAT);
 		option.displayFormat = "%v pixel";

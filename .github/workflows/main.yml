@@ -11,12 +11,12 @@ jobs:
       matrix:
         include:
           - name: Linux
-            os: ubuntu-24.04
+            os: ubuntu-latest
             setupScript: sh ./setup/unix.sh
             CACHE_NAME: H-Slice.desktop-cache
 
           - name: Mobile
-            os: macos-15
+            os: macos-latest
             setupScript: sh ./setup/mobile.sh
             CACHE_NAME: H-Slice.mobile-cache
     uses: ./.github/workflows/dependencies.yml
@@ -44,7 +44,7 @@ jobs:
         include:
           - name: Windows
             os: windows-2022
-            buildArgs: "windows"
+            buildArgs: windows
             exportPath: windows
             artifactName: H-Slice.0.2.3.windows
             artifactPath: export\release\windows\bin\*
@@ -52,7 +52,7 @@ jobs:
             cacheLibrariesPath: H-Slice.desktop-cache
           - name: Linux
             os: ubuntu-22.04
-            buildArgs: "linux"
+            buildArgs: linux
             exportPath: linux
             artifactName: H-Slice.0.2.3.linux
             artifactPath: export/release/linux/bin/*
@@ -78,7 +78,7 @@ jobs:
       matrix:
         include:
           - name: Android
-            os: ubuntu-24.04
+            os: macos-15
             buildArgs: "android"
             exportPath: android
             artifactName: H-Slice.0.2.3.android

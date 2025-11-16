@@ -31,10 +31,10 @@ jobs:
     uses: ./.github/workflows/mac-universal.yml
     with:
       exportPath: macos
-      cachePath: H-Slice.build-macos
-      cacheLibrariesPath: H-Slice.mobile-cache
       artifactName: H-Slice.0.2.2.macos
       artifactPath: export/release/macos/bin/*
+      cachePath: H-Slice.build-macos
+      cacheLibrariesPath: H-Slice.mobile-cache
   BuildDesktop:
     name: ${{ matrix.name }}
     needs: BuildCaches
@@ -91,7 +91,7 @@ jobs:
             exportPath: ios
             artifactName: H-Slice.0.2.2.ios
             artifactPath: "export/release/ios/build/Release-iphoneos/*.ipa"
-            cachePath: H-Slice.build-macos
+            cachePath: H-Slice.build-ios
             cacheLibrariesPath: H-Slice.mobile-cache
     uses: ./.github/workflows/build.yml
     secrets: inherit

@@ -50,9 +50,11 @@ class WarningState extends MusicBeatState
 				FlxTransitionableState.skipNextTransOut = true;
 
 				if(onAccept != null) {
-					if (back) { onExit();
+					if (back) {
+						if (onExit != null) onExit();
 						FlxG.sound.play(Paths.sound('cancelMenu'));
-					} else { onAccept();
+					} else {
+						if (onAccept != null) onAccept();
 						FlxG.sound.play(Paths.sound('confirmMenu'));
 					}
 				}

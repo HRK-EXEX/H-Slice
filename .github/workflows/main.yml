@@ -4,7 +4,6 @@ on:
   push:
     branches: [master]
 jobs:
-  
   BuildCaches:
     name: ${{ matrix.name }}
     permissions: write-all
@@ -14,12 +13,12 @@ jobs:
           - name: Linux
             os: ubuntu-latest
             setupScript: sh ./setup/unix.sh
-            CACHE_NAME: H-Slice.0.2.2.desktop-cache
+            CACHE_NAME: H-Slice.desktop-cache
 
           - name: Mobile
             os: macos-latest
             setupScript: sh ./setup/mobile.sh
-            CACHE_NAME: H-Slice.0.2.2.mobile-cache
+            CACHE_NAME: H-Slice.mobile-cache
     uses: ./.github/workflows/dependencies.yml
     with:
       os: ${{ matrix.os }}
@@ -32,10 +31,10 @@ jobs:
     uses: ./.github/workflows/mac-universal.yml
     with:
       exportPath: macos
-      cachePath: H-Slice.0.2.2.build-macos
-      cacheLibrariesPath: H-Slice.0.2.2.mobile-cache
-      artifactName: H-Slice.0.2.2.macos
+      artifactName: H-Slice.0.2.3.macos
       artifactPath: export/release/macos/bin/*
+      cachePath: H-Slice.build-macos
+      cacheLibrariesPath: H-Slice.mobile-cache
   BuildDesktop:
     name: ${{ matrix.name }}
     needs: BuildCaches
@@ -47,29 +46,29 @@ jobs:
             os: windows-2022
             buildArgs: windows
             exportPath: windows
-            artifactName: H-Slice.0.2.2.windows
-            cacheLibrariesPath: H-Slice.0.2.2.desktop-cache
-            cachePath: H-Slice.0.2.2.build-windows
+            artifactName: H-Slice.0.2.3.windows
             artifactPath: export\release\windows\bin\*
+            cachePath: H-Slice.build-windows
+            cacheLibrariesPath: H-Slice.desktop-cache
           - name: Linux
             os: ubuntu-22.04
             buildArgs: linux
             exportPath: linux
-            artifactName: H-Slice.0.2.2.linux
-            cachePath: H-Slice.0.2.2.build-linux
-            cacheLibrariesPath: H-Slice.0.2.2.desktop-cache
+            artifactName: H-Slice.0.2.3.linux
             artifactPath: export/release/linux/bin/*
+            cachePath: H-Slice.build-linux
+            cacheLibrariesPath: H-Slice.desktop-cache
 
     uses: ./.github/workflows/build.yml
     with:
       name: ${{ matrix.name }}
       os: ${{ matrix.os }}
       buildArgs: ${{ matrix.buildArgs }}
-      cacheLibrariesPath: ${{ matrix.cacheLibrariesPath }}
       exportPath: ${{ matrix.exportPath }}
       artifactName: ${{ matrix.artifactName }}
       artifactPath: ${{ matrix.artifactPath }}
       cachePath: ${{matrix.cachePath}}
+      cacheLibrariesPath: ${{ matrix.cacheLibrariesPath }}
 
   BuildMobile:
     permissions: write-all
@@ -80,20 +79,20 @@ jobs:
         include:
           - name: Android
             os: macos-15
-            exportPath: android
             buildArgs: "android"
-            cacheLibrariesPath: H-Slice.0.2.2.mobile-cache
-            artifactName: H-Slice.0.2.2.android
-            cachePath: H-Slice.0.2.2.build-android
+            exportPath: android
+            artifactName: H-Slice.0.2.3.android
             artifactPath: "export/release/android/bin/app/build/outputs/apk/release/*.apk"
+            cachePath: H-Slice.build-android
+            cacheLibrariesPath: H-Slice.mobile-cache
           - name: iOS
             os: macos-15
             buildArgs: "ios -nosign"
             exportPath: ios
-            cacheLibrariesPath: H-Slice.0.2.2.mobile-cache
-            artifactName: H-Slice.0.2.2.ios
+            artifactName: H-Slice.0.2.3.ios
             artifactPath: "export/release/ios/build/Release-iphoneos/*.ipa"
-            cachePath: H-Slice.0.2.2.build-ios
+            cachePath: H-Slice.build-ios
+            cacheLibrariesPath: H-Slice.mobile-cache
     uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
@@ -102,6 +101,6 @@ jobs:
       buildArgs: ${{ matrix.buildArgs }}
       exportPath: ${{ matrix.exportPath }}
       artifactName: ${{ matrix.artifactName }}
-      cacheLibrariesPath: ${{ matrix.cacheLibrariesPath }}
       artifactPath: ${{ matrix.artifactPath }}
       cachePath: ${{matrix.cachePath}}
+      cacheLibrariesPath: ${{ matrix.cacheLibrariesPath }}

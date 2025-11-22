@@ -21,7 +21,6 @@ class MetaNote extends Note
 		tempCast = {
 			strumTime: time,
 			noteData: data,
-			density: 1,
 			noteType: "",
 			holdLength: 0
 		}

@@ -49,17 +49,9 @@ typedef CastNote = {
 	// 15th bit is for blockHit
 	// 16th bit is for ignoreNote
 	var noteData:Int;
-	var density:Float;
-	@:optional var holdLength:Null<Float>;
-	@:optional var noteType:String;
-	@:optional var cmpSpam:Array<Dynamic>;
+	var noteType:String;
+	var holdLength:Float;
 }
-
-typedef SpamNoteData = {
-    var remaining:Float;
-    var density:Float;
-    var seedNote:CastNote;  // reference to original note
-};
 
 var toBool = CoolUtil.bool;
 var toInt = CoolUtil.int;
@@ -85,7 +77,6 @@ class Note extends FlxSprite
 	public static final DEFAULT_CAST:CastNote = {
 		strumTime: 0,
 		noteData: 0,
-		density: 1,
 		noteType: "",
 		holdLength: 0
 	};
@@ -94,7 +85,6 @@ class Note extends FlxSprite
 
 	public var strumTime:Float = 0;
 	public var noteData:Int = 0;
-	public var density:Float = 1;
 	public var strum:StrumNote = null;
 
 	public var mustPress:Bool = false;
@@ -610,7 +600,6 @@ class Note extends FlxSprite
 		blockHit = toBool(target.noteData & (1<<14));				 		 // blockHit
 		ignoreNote = toBool(target.noteData & (1<<15));				 		 // ignoreNote
 		noteData = target.noteData & 3;
-		density = target.density;
 
 		hitsoundDisabled = isSustainNote;
 
@@ -699,7 +688,6 @@ class Note extends FlxSprite
 		var converted:CastNote = {
 			strumTime: this.strumTime,
 			noteData: lmfao,
-			density: 1,
 			noteType: this.noteType,
 			holdLength: this.sustainLength
 		};

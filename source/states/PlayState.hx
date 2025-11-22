@@ -8,7 +8,6 @@ import flixel.animation.FlxAnimation;
 #if desktop import backend.FFMpeg; #end
 import openfl.system.Capabilities;
 import objects.Note.CastNote;
-import objects.Note.SpamNoteData;
 import flixel.math.FlxRandom;
 import haxe.ds.IntMap;
 import haxe.Timer;
@@ -181,8 +180,6 @@ class PlayState extends MusicBeatState
 	public var eventNotes:Array<EventNote> = [];
 	public var sustainAnim:Bool = ClientPrefs.data.holdAnim;
 	private var skipNotes:NoteGroup;
-	
-	public static var spamNotes:Array<SpamNoteData> = [];
 
 	public var skipGhostNotes:Bool = ClientPrefs.data.skipGhostNotes;
 	public var ghostNotesCaught:Int = 0;
@@ -413,6 +410,79 @@ class PlayState extends MusicBeatState
 	var backupOffset = 0;
 	var sortingWay = 0;
 	var commaImg = false;
+
+	var freeBotplayTxt:Array<String> = [
+		"BOTPRAY",
+		"Skill issue mode",
+		"Ready or die",
+		"Bambi black midis be like:",
+		"You fish",
+		"Pumpkin",
+		"I hate garbage collector",
+		"Someone calling 911",
+		"Heaven or hell",
+		"I'll give u the gift called empty",
+		"Imagine 1 billion notes fnf chart",
+		"Run away or someone comes",
+		"Disguised face",
+		"Is rainbow eyesore a drug",
+		"Divived by 0 equals 42",
+		"It's just a text",
+		"Wait, who are you",
+		"Hello, visitor!",
+		"When botplay lags:",
+		"Amogus",
+		"Is it impossible?",
+		"Testing... just testing...",
+		"Imagine 1 tillion notes fnf chart",
+		"Gf neck is getting bonk",
+		"It's a benchmark",
+		"B0TPL4Y",
+		"8 800 555 3535",
+		"Never gonna give you up",
+		"Spamming spamming spamming",
+		"Beware memory leaks",
+		"When would it can multi-threaded processing",
+		"Help me, I have programming skill issue",
+		"Demon is inside bot",
+		"Don't worry, You can beat this",
+		"It's not overcharted, You're just bad",
+		":)",
+		">:(",
+		"+++++++++[>++++++++<-]>------.+++++++++++++.+++++.----.----.-----------.<+++++[>+++++<-]>-.",
+		"TXkgZXZlcnkgdGVjaG5pcXVlIGhhdmUgc3RvbGVuIGJ5IG90aGVyIHByb2dyYW1tZXJz",
+		"...---...",
+		"Dark, Darker, Yet Darker",
+		"Mesmerizing",
+		"Your PC is screaming",
+		"NOTPLAY",
+		"Coming 2027",
+		"Mango",
+		"127.0.0.1:6000",
+		"Break Infinity!",
+		"Break Eternity!",
+		"Break Unity/Reality!",
+		"Recursion is Power",
+		"YOUR TAKING TOO LONG",
+		"YOUR LONG",
+		"YOUR DONKEY KONG",
+		"Dave and baldi are same game btw",
+		"You felt deja vu",
+		"No way...",
+		"Amen break core",
+	];
+
+	var rickRolled:Bool = false;
+	final rickRollTxt:Array<String> = [
+		"Never gonna give you up",
+		"Never gonna let you down",
+		"Never gonna run around",
+		"and desert you",
+		"Never gonna make you cry",
+		"Never gonna say goodbye",
+		"Never gonna tell a lie",
+		"and hurt you"
+	];
 
 	public static var canResync:Bool = false;
 
@@ -736,7 +806,7 @@ class PlayState extends MusicBeatState
 		scoreTxt.borderSize = 1.25;
 		scoreTxt.visible = !ClientPrefs.data.hideHud;
 		scoreTxt.antialiasing = ClientPrefs.data.antialiasing;
-		updateScore(false);
+		updateScore();
 		uiGroup.add(scoreTxt);
 		
 		infoTxt = new FlxText(0, downScroll ? healthBar.y + 64 : healthBar.y - 48, FlxG.width, "", 32);
@@ -763,6 +833,10 @@ class PlayState extends MusicBeatState
 		botplayTxt.visible = cpuControlled;
 		botplayTxt.antialiasing = ClientPrefs.data.antialiasing;
 		uiGroup.add(botplayTxt);
+
+		if (ClientPrefs.data.randomText && FlxG.random.bool(ClientPrefs.data.randomChance * 100) && !ffmpegMode){
+			botplayTxt.text = FlxG.random.getObject(freeBotplayTxt);
+		}
 
 		uiGroup.cameras = [camHUD];
 		notesGroup.cameras = [camHUD];
@@ -1823,7 +1897,7 @@ class PlayState extends MusicBeatState
 
 			var gottaHitNote:Bool;
 
-			var swagNote:CastNote = Note.DEFAULT_CAST;
+			var swagNote:CastNote;
 			var roundSus:Int;
 			var curStepCrochet:Float;
 			var sustainNote:CastNote;
@@ -1848,7 +1922,6 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			spawnBPM = daBpm;
 			for (section in sectionsData)
 			{
 				++cnt;
@@ -1867,38 +1940,20 @@ class PlayState extends MusicBeatState
 					// CLEAR ANY POSSIBLE GHOST NOTES WHEN IF THE OPTION ENABLED
 					if (skipGhostNotes && sectionNoteCnt != 0) {
 						if (Math.abs(strumTimeVector[chartNoteData] - strumTime) <= removeTime) {
-							ghostNotesCaught++; swagNote.density++; continue;
+							ghostNotesCaught++; continue;
 						} else {
 							strumTimeVector[chartNoteData] = strumTime;
 						}
 					}
 
+					holdLength = songNotes[2] ?? 0.0;
+
 					swagNote = {
 						strumTime: songNotes[0],
 						noteData: noteColumn,
-						density: 1
+						noteType: songNotes[3],
+						holdLength: holdLength
 					};
-					
-					if (Std.isOfType(songNotes[3], String))
-						swagNote.noteType = songNotes[3];
-					
-					function extractSpamData(note:Array<Dynamic>):Array<Float> {
-						for (slot in [3, 4]) {
-							var field = note[slot];
-							if (Std.isOfType(field, Array)) {
-								return cast field;
-							} else if (field != null && field.cmpSpam != null) {
-								var bd = field.cmpSpam;
-								if (Std.isOfType(bd, Array)) return bd;
-							}
-						}
-						return null;
-					}
-
-					var burst = extractSpamData(songNotes);
-					if (burst != null) swagNote.cmpSpam = burst;
-
-					if (songNotes[2] > 0.0) swagNote.holdLength = songNotes[2];
 					
 					swagNote.noteData |= gottaHitNote ? 1<<8 : 0; // mustHit
 					swagNote.noteData |= (section.gfSection && (gfSide ? gottaHitNote : !gottaHitNote)) || songNotes[3] == 'GF Sing' || songNotes[3] == 4 ? 1<<11 : 0; // gfNote
@@ -1907,29 +1962,27 @@ class PlayState extends MusicBeatState
 					
 					unspawnNotes.push(swagNote);
 
-					if (swagNote.holdLength > 0) {
 					curStepCrochet = 15000 / daBpm;
 					roundSus = Math.round(swagNote.holdLength / curStepCrochet);
-						if (roundSus > 0)
+					if (roundSus > 0)
+					{
+						for (susNote in 0...roundSus + 1)
 						{
-							for (susNote in 0...roundSus + 1)
-							{
-								sustainNote = {
-									strumTime: swagNote.strumTime + curStepCrochet * susNote,
-									noteData: swagNote.noteData,
-									density: swagNote.density,
-									noteType: swagNote.noteType
-								};
-								
-								sustainNote.noteData |= 1<<9; // isHold
-								sustainNote.noteData |= susNote == roundSus ? 1<<10 : 0; // isHoldEnd
+							sustainNote = {
+								strumTime: swagNote.strumTime + curStepCrochet * susNote,
+								noteData: swagNote.noteData,
+								noteType: swagNote.noteType,
+								holdLength: 0.0
+							};
+							
+							sustainNote.noteData |= 1<<9; // isHold
+							sustainNote.noteData |= susNote == roundSus ? 1<<10 : 0; // isHoldEnd
 
-								unspawnSustainNotes.push(sustainNote);
+							unspawnSustainNotes.push(sustainNote);
 
-								++sustainNoteCnt;
-							}
-							sustainTotalCnt += sustainNoteCnt;
+							++sustainNoteCnt;
 						}
+						sustainTotalCnt += sustainNoteCnt;
 					}
 					
 					if (!noteTypes.contains(swagNote.noteType))
@@ -2291,6 +2344,7 @@ class PlayState extends MusicBeatState
 	var hit:Int = 0;
 	var skipHit:Int = 0;
 	var globalNoteHit:Bool = false;
+	var globalFrameHit:Bool = false;
 	var daHit:Bool = false;
 	var bfHit:Bool = false;
 	var noteDataInfo:Int = 0;
@@ -2298,12 +2352,12 @@ class PlayState extends MusicBeatState
 	// Rendering Counter
 	var shownCnt:Int = 0;
 	public var shownMax:Int = 0;
-	var skipCnt:Float = 0;
-	var skipBf:Float = 0;
-	var skipOp:Float = 0;
-	var skipTimeOut:Float = 0;
+	var skipCnt:Int = 0;
+	var skipBf:Int = 0;
+	var skipOp:Int = 0;
+	var skipTimeOut:Int = 0;
 	var skipTotalCnt:Float = 0;
-	var skipMax:Float = 0;
+	var skipMax:Int = 0;
 
 	// Infomation
 	var changeInfo:Bool = false;
@@ -2347,8 +2401,7 @@ class PlayState extends MusicBeatState
 		
 		daHit = bfHit = showAgain = false; canAnim.fill(true);
 		if (popUpHitNote != null) popUpHitNote = null;
-		hit = skipHit = shownCnt = susEnds = 0;
-		skipBf = skipOp = 0;
+		hit = skipHit = skipBf = skipOp = shownCnt = susEnds = 0;
 		lastSongSpeed = songSpeed;
 
 		if (refBpm != Conductor.bpm) {
@@ -2413,6 +2466,14 @@ class PlayState extends MusicBeatState
 			botplaySine += 180 * globalElapsed;
 			botplayTxt.alpha = 1 - Math.sin(Math.PI * botplaySine / 180);
 			botplaySineCnt = Math.floor((botplaySine + 270) / 360);
+
+			if (botplayTxt.text == "Never gonna give you up" && !ffmpegMode) {
+				rickRolled = true;
+			}
+			
+			if (rickRolled) {
+				botplayTxt.text = rickRollTxt[botplaySineCnt & 7];
+			}
 			
 			#if desktop
 			if (ffmpegMode) {
@@ -2520,7 +2581,10 @@ class PlayState extends MusicBeatState
 
 		updateIconsScale(globalElapsed);
 		updateIconsPosition();
-		updateScoreText();
+
+		if (bfHit || daHit) {
+			updateScoreText();
+		}
 		
 		if (!overHealth) healthLerp = healthLerper();
 		else {
@@ -2627,6 +2691,7 @@ class PlayState extends MusicBeatState
 						}
 					});
 				}
+
 				for (index in 0...popUpDebug.length) {
 					if (index != 0)
 						popUpAlive += popUpDebug[index];
@@ -2668,7 +2733,7 @@ class PlayState extends MusicBeatState
 					}
 
 					if (toBool(flag & 2)) {
-						skipMax = Math.max(skipCnt, skipMax);
+						skipMax = FlxMath.maxInt(skipCnt, skipMax);
 
 						if (numberDelimit)
 							renderedInfo = 'Rendered/Skipped: ${formatD(Math.max(notes.countLiving(), 0))}/${formatD(skipCnt)}/${formatD(notes.length)}/${formatD(skipMax)}';
@@ -2888,19 +2953,19 @@ class PlayState extends MusicBeatState
 		iconP2.x = barPos - (150 * iconP2.scale.x) / 2 - 52;
 	}
 
-	var limitCount:Int = 0;
-	var swapNote:Note = null;
+	var limitCount = 0;
+	var swapNote:Note;
 	var skipOpCNote:CastNote;
 	var skipBfCNote:CastNote;
 	var skipNoteSplash:Note = new Note();
-	var showAgain:Bool = false;
-	var isCanPass:Bool = false;
-	var isDisplay:Bool = false;
-	var timeLimit:Bool = false;
-	var noteJudge:Bool = false;
+	var showAgain = false;
+	var isCanPass = false;
+	var isDisplay = false;
+	var timeLimit = false;
+	var noteJudge = false;
 
-	var castHold:Bool = false;
-	var castMust:Bool = false;
+	var castHold = false;
+	var castMust = false;
 	var fixedPosition:Float = 0;
 	var iDist:Array<Float> = [];
 	var lDist:Array<Float> = [];
@@ -2908,76 +2973,29 @@ class PlayState extends MusicBeatState
 	var availNoteData:Int = 0;
 
 	var susEnds:Int = 0;
-	var spawnBPM:Float = 100; //just because
+
+	inline function initSpawnInfo(casted:CastNote) {
+		noteDataInfo = casted.noteData;
+		castHold = toBool(noteDataInfo & (1<<9));
+		castMust = toBool(noteDataInfo & (1<<8));
+		availNoteData = (noteDataInfo + (castMust ? 4 : 0)) & 255;
+		prevSus[availNoteData] = currSus[availNoteData];
+		currSus[availNoteData] = castHold;
+		
+		shownTime = showNotes ? castHold ? Math.max(spawnTime / songSpeed, globalElapsed * 1000) : spawnTime / songSpeed : 0;
+		shownRealTime = shownTime * 0.001;
+		
+		isDisplay = casted.strumTime - fixedPosition < shownTime;
+	}
 	
+	var currSus:Array<Bool> = [];
+	var prevSus:Array<Bool> = [];
 	public function noteSpawn()
 	{
 		timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
 
 		lDist = []; dist = [];
 		lDist.resize(8); dist.resize(8);
-
-		function spamSpawn() {
-			for (spam in spamNotes) {
-				fixedPosition = Conductor.songPosition - ClientPrefs.data.noteOffset;
-				limitCount = notes.countLiving();
-
-				noteCheck(spam.seedNote);
-				isDisplay = spam.seedNote.strumTime - fixedPosition < shownTime;
-
-				while (isDisplay && limitCount < limitNotes)
-				{
-					var oldST = spam.seedNote.strumTime;
-					canBeHit = fixedPosition > spam.seedNote.strumTime; // false is before, true is after
-					timeLimit = (nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp()) - timeout < shownRealTime;
-
-					isCanPass = !skipSpawnNote || (keepNotes ? !canBeHit : timeLimit);
-					if (showAfter) {
-						if (!showAgain && !canBeHit) {
-							showAgain = true;
-							lDist = []; dist = [];
-							lDist.resize(8); dist.resize(8);
-							timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
-						}
-					}
-					if ((!canBeHit || !optimizeSpawnNote) && isCanPass) spawn(spam.seedNote);
-					else {
-						var bulkSkipCount:Float = 0;
-						var noteInterval:Float = (15000 / spawnBPM) / spam.density;
-						if (spam.seedNote.strumTime < fixedPosition) {
-							// Only skip notes that are fully in the past
-							bulkSkipCount = Math.ffloor((fixedPosition - spam.seedNote.strumTime) / noteInterval) - 1;
-							bulkSkipCount = Math.min(bulkSkipCount, spam.remaining);
-						}
-						if (bulkSkipCount > 0) {
-							spam.seedNote.strumTime += bulkSkipCount * noteInterval;
-							spam.remaining -= bulkSkipCount;
-							// Update skip counters
-							if (castMust) skipBf += bulkSkipCount;
-							else skipOp += bulkSkipCount;
-							skipCnt += bulkSkipCount;
-							if (castMust) skipBfCNote = targetNote; else skipOpCNote = spam.seedNote;
-
-							if (spam.remaining <= 0) {
-								spamNotes.remove(spam);
-								break;
-							}
-						}
-						skipNote(spam.seedNote);
-					}
-
-					if (spam.remaining > 0)
-						spam.remaining--;
-					else { spamNotes.remove(spam); break; }
-					spam.seedNote.strumTime += (15000/spawnBPM)/spam.density;
-					spawnBPM = Conductor.getBPMFromSeconds(spam.seedNote.strumTime).bpm;
-
-					noteCheck(spam.seedNote);
-					isDisplay = spam.seedNote.strumTime - fixedPosition < shownTime && spam.seedNote.strumTime != oldST;
-					timeLimit = (nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp()) - timeout < shownRealTime;
-				}
-			}
-		}
 		
 		if (unspawnNotes.length > totalCnt)
 		{
@@ -2985,8 +3003,8 @@ class PlayState extends MusicBeatState
 			targetNote = unspawnNotes[totalCnt];
 			fixedPosition = Conductor.songPosition - ClientPrefs.data.noteOffset;
 			
-			noteCheck(targetNote);
-			isDisplay = targetNote.strumTime - fixedPosition < shownTime;
+			// for initalize
+			initSpawnInfo(targetNote);
 
 			while (isDisplay && limitCount < limitNotes)
 			{
@@ -2997,38 +3015,90 @@ class PlayState extends MusicBeatState
 
 				isCanPass = !skipSpawnNote || (keepNotes ? !tooLate : timeLimit);
 
-				if (targetNote.cmpSpam != null) {
-					spamNotes.push({
-						remaining: (targetNote.cmpSpam[0]),
-						density: targetNote.cmpSpam[1],
-						seedNote: targetNote
-					});
+				if (showAfter) {
+					if (!showAgain && !canBeHit) {
+						showAgain = true;
+						lDist = []; dist = [];
+						lDist.resize(8); dist.resize(8);
+						timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
+					}
+				}
 
-					targetNote.cmpSpam = null;
-					spamSpawn();
+				if ((!noteJudge || !optimizeSpawnNote) && isCanPass) {
+					if (betterRecycle) {
+						dunceNote = notes.spawnNote(targetNote);
+					} else dunceNote = notes.recycle(Note).recycleNote(targetNote);
+	
+					strumGroup = dunceNote.mustPress ? playerStrums : opponentStrums;
+					dunceNote.strum = strumGroup.members[dunceNote.noteData];
+					
+					dist[availNoteData] = 0.45 * (Conductor.songPosition - dunceNote.strumTime) * songSpeed;
+
+					if (hideOverlapped > 0) {
+						iDist[availNoteData] = dist[availNoteData] - lDist[availNoteData];
+						dunceNote.visible = prevSus[availNoteData] != currSus[availNoteData] || Math.abs(iDist[availNoteData]) >= hideOverlapped;
+						// trace(availNoteData, prevSus[availNoteData], currSus[availNoteData], numFormat(dist[availNoteData], 3), numFormat(lDist[availNoteData], 3), dunceNote.visible ? "shown" : "hideeeeeeeeeeeeeeeeeeeee");
+						if (dunceNote.visible) {
+							lDist[availNoteData] = dist[availNoteData];
+							if (ClientPrefs.data.noteShaders) {
+								dunceNote.rgbShader.enabled = true;
+								dunceNote.defaultRGB();
+								if (dunceNote.hitCausesMiss) {
+									dunceNote.rgbShader.r = 0xFF101010;
+									dunceNote.rgbShader.g = 0xFFFF0000;
+									dunceNote.rgbShader.b = 0xFF990022;
+								}
+							}
+						} else dunceNote.rgbShader.enabled = false;
+					} else dunceNote.visible = true;
+
+					if (spawnNoteEvent) {
+						callOnLuas('onSpawnNote', [
+							totalCnt,
+							dunceNote.noteData,
+							dunceNote.noteType,
+							dunceNote.isSustainNote,
+							dunceNote.strumTime
+						]);
+						callOnHScript('onSpawnNote', [dunceNote]);
+					}
+
+					if (processFirst) {
+						if (dunceNote.visible) {
+							dunceNote.followStrumNote(songSpeed, dist[availNoteData]);
+							if (canBeHit && dunceNote.isSustainNote && dunceNote.strum.sustainReduce) {
+								dunceNote.clipToStrumNote();
+							}
+							++shownCnt;
+						}
+					} else ++shownCnt;
+					++limitCount;
 				} else {
-					if (showAfter) {
-						if (!showAgain && !canBeHit) {
-							showAgain = true;
-							lDist = []; dist = [];
-							lDist.resize(8); dist.resize(8);
-							timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
+					// Skip notes without spawning
+					skipHit |= 1 << availNoteData;
+					if (!timeLimit) ++skipTimeOut;
+
+					if (cpuControlled) {
+						if (!castHold) castMust ? ++skipBf : ++skipOp;
+					} else castMust ? noteMissCommon(availNoteData) : ++skipOp;
+
+					if (enableHoldSplash) susEnds |= (targetNote.noteData & 1<<10) > 0 ? 1 << availNoteData : 0;
+					
+					if (enableSplash) {
+						if (!castHold && (cpuControlled || !castMust) &&
+							splashMoment[availNoteData] < splashCount && splashUsing[availNoteData].length < splashCount)
+						{
+							skipNoteSplash.recycleNote(targetNote);
+							spawnNoteSplashOnNote(skipNoteSplash);
 						}
 					}
 
-					if ((!noteJudge || !optimizeSpawnNote) && isCanPass) {
-						spawn(targetNote);
-					} else {
-						skipNote(targetNote);
-					}
+					if (castMust) skipBfCNote = targetNote; else skipOpCNote = targetNote;
 				}
 				
-				++totalCnt;
-				if (unspawnNotes.length > totalCnt) targetNote = unspawnNotes[totalCnt]; else break;
-				
-				noteCheck(targetNote);
-				
-				isDisplay = targetNote.strumTime - fixedPosition < shownTime;
+				if (unspawnNotes.length > ++totalCnt) targetNote = unspawnNotes[totalCnt]; else break;
+
+				initSpawnInfo(targetNote);
 			}
 		}
 		safeTime = ((nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp()) - timeout) / shownRealTime * 100;
@@ -3038,96 +3108,6 @@ class PlayState extends MusicBeatState
 				notes.fasterSort();
 			else noteSortShortCut();
 		}
-
-		timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
-		spamSpawn();
-	}
-
-	function noteCheck(target:CastNote) {
-		// for initalize
-		noteDataInfo = target.noteData;
-		castHold = toBool(noteDataInfo & (1<<9));
-		castMust = toBool(noteDataInfo & (1<<8));
-		availNoteData = (noteDataInfo + (castMust ? 4 : 0)) & 255;
-		prevSus[availNoteData] = currSus[availNoteData] ?? false;
-		currSus[availNoteData] = castHold;
-
-		shownTime = showNotes ? castHold ? Math.max(spawnTime / songSpeed, globalElapsed * 1000) : spawnTime / songSpeed : 0;
-		shownRealTime = shownTime * 0.001;
-	}
-	
-	function spawn(targetNote:CastNote) {
-		if (betterRecycle) {
-			dunceNote = notes.spawnNote(targetNote);
-		} else dunceNote = notes.recycle(Note).recycleNote(targetNote);
-
-		strumGroup = dunceNote.mustPress ? playerStrums : opponentStrums;
-		dunceNote.strum = strumGroup.members[dunceNote.noteData];
-		
-		dist[availNoteData] = 0.45 * (Conductor.songPosition - dunceNote.strumTime) * songSpeed;
-
-		if (hideOverlapped > 0) {
-			iDist[availNoteData] = dist[availNoteData] - lDist[availNoteData];
-			dunceNote.visible = prevSus[availNoteData] != currSus[availNoteData] || Math.abs(iDist[availNoteData]) >= hideOverlapped;
-			// trace(availNoteData, prevSus[availNoteData], currSus[availNoteData], numFormat(dist[availNoteData], 3), numFormat(lDist[availNoteData], 3), dunceNote.visible ? "shown" : "hideeeeeeeeeeeeeeeeeeeee");
-			if (dunceNote.visible) {
-				lDist[availNoteData] = dist[availNoteData];
-				if (ClientPrefs.data.noteShaders) {
-					dunceNote.rgbShader.enabled = true;
-					dunceNote.defaultRGB();
-					if (dunceNote.hitCausesMiss) {
-						dunceNote.rgbShader.r = 0xFF101010;
-						dunceNote.rgbShader.g = 0xFFFF0000;
-						dunceNote.rgbShader.b = 0xFF990022;
-					}
-				}
-			} else dunceNote.rgbShader.enabled = false;
-		} else dunceNote.visible = true;
-
-		if (spawnNoteEvent) {
-			callOnLuas('onSpawnNote', [
-				totalCnt,
-				dunceNote.noteData,
-				dunceNote.noteType,
-				dunceNote.isSustainNote,
-				dunceNote.strumTime
-			]);
-			callOnHScript('onSpawnNote', [dunceNote]);
-		}
-
-		if (processFirst) {
-			if (dunceNote.visible) {
-				dunceNote.followStrumNote(songSpeed, dist[availNoteData]);
-				if (canBeHit && dunceNote.isSustainNote && dunceNote.strum.sustainReduce) {
-					dunceNote.clipToStrumNote();
-				}
-				++shownCnt;
-			}
-		} else ++shownCnt;
-		++limitCount;
-	}
-
-	function skipNote(targetNote:CastNote) {
-		// Skip notes without spawning
-		skipHit |= 1 << availNoteData;
-		if (!timeLimit) ++skipTimeOut;
-
-		if (cpuControlled) {
-			if (!castHold) castMust ? skipBf += targetNote.density : skipOp += targetNote.density;
-		} else castMust ? noteMissCommon(availNoteData) : skipOp += targetNote.density;
-
-		if (enableHoldSplash) susEnds |= (targetNote.noteData & 1<<10) > 0 ? 1 << availNoteData : 0;
-		
-		if (enableSplash) {
-			if (!castHold && (cpuControlled || !castMust) &&
-				splashMoment[availNoteData] < splashCount && splashUsing[availNoteData].length < splashCount)
-			{
-				skipNoteSplash.recycleNote(targetNote);
-				spawnNoteSplashOnNote(skipNoteSplash);
-			}
-		}
-
-		if (castMust) skipBfCNote = targetNote; else skipOpCNote = targetNote;
 	}
 
 	var index:Int = 0;
@@ -3135,8 +3115,6 @@ class PlayState extends MusicBeatState
 	var processedReal:Int = 0;
 	var processedRealTimer:Float = 0;
 	var processedRealElapsed:Float = 0;
-	var currSus:Array<Bool> = [];
-	var prevSus:Array<Bool> = [];
 	public function noteUpdate()
 	{
 		if (generatedMusic)
@@ -3310,7 +3288,7 @@ class PlayState extends MusicBeatState
 					for (i in 0...loopVector.length) {
 						if (!skipAnim[i+1]) continue;
 						var daNote = loopVector[i];
-						var scriptTarget = [Std.int(skipOp), Std.int(skipBf)];
+						var scriptTarget = [skipOp, skipBf];
 						skipArray = [0, Std.int(Math.abs(daNote.noteData)), daNote.noteType, daNote.isSustainNote];
 						
 						for (shit in 0...scriptTarget[index]) {
@@ -4542,12 +4520,12 @@ class PlayState extends MusicBeatState
 
 		if (!ClientPrefs.data.comboStacking && popUpGroup.members.length > 0) {
 			for (spr in popUpGroup) {
-				if (spr.exists) spr.kill();
+				spr.kill();
 			}
 		}
 
 		if (showRating && bfHit) {
-			ratingImage = cpuControlled || daRating == null ? forceSick.image : daRating.image;
+			ratingImage = cpuControlled ? forceSick.image : daRating.image;
 
 			ratingPop = popUpGroup.spawn();
 			ratingPop.setupRatingData(uiPrefix + ratingImage + uiPostfix);
@@ -4560,7 +4538,7 @@ class PlayState extends MusicBeatState
 
 		if (showComboNum) {
 			while(tempCombo >= 10) {
-				seperatedScore.unshift(Math.abs(tempCombo / 10) % 10);
+				seperatedScore.unshift(Std.int(tempCombo / 10) % 10);
 				tempCombo /= 10;
 			}
 			seperatedScore.push(tempNotes % 10);
@@ -5006,7 +4984,7 @@ class PlayState extends MusicBeatState
 	
 		++opHitFrame;
 		if (!note.isSustainNote) {			
-			opCombo += note.density; opSideHit += note.density; daHit = true;
+			++opCombo; ++opSideHit; daHit = true;
 			if (showPopups && changePopup) popUpHitNote = note;
 			invalidateNote(note);
 		}
@@ -5101,7 +5079,7 @@ class PlayState extends MusicBeatState
 			++bfHitFrame;
 			if (!note.isSustainNote)
 			{
-				combo += note.density; bfSideHit += note.density; globalNoteHit = true;
+				++combo; ++bfSideHit; globalNoteHit = true;
 				maxCombo = Math.max(maxCombo, combo);
 				if (showPopups) popUpHitNote = note;
 				if (!cpuControlled) addScore(note);
@@ -5286,7 +5264,6 @@ class PlayState extends MusicBeatState
 
 		if (leavePlayState) SONG = null;
 		notes.clear();
-		spamNotes = [];
 		
 		#if desktop
 		if (ffmpegMode) {

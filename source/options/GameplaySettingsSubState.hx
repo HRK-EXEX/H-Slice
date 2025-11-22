@@ -147,11 +147,27 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.onChange = onAccuracyUpdateRate;
 		addOption(option);
 
+		var option:Option = new Option('Random Botplay Text',
+			"Literally It shows random text in botplay text.\nI brought it from my old engine.",
+			'randomText',
+			BOOL);
+		addOption(option);
+
+		var option:Option = new Option('- Occurrence Rate',
+			"It's not from my old engine, a new thing.",
+			'randomChance',
+			PERCENT);
+		option.scrollSpeed = 1;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.01;
+		option.decimals = 2;
+		addOption(option);
+
 		var option:Option = new Option('BGM/Music Volume',
 			"I wonder why doesn't this option exists in official build? xd",
 			'bgmVolume',
 			PERCENT);
-		addOption(option);
 		option.scrollSpeed = 1;
 		option.minValue = 0.0;
 		option.maxValue = 1;
@@ -159,12 +175,12 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.decimals = 2;
 		option.onChange = onChangebgmVolume;
 		bgmVolume = option;
+		addOption(option);
 
 		var option:Option = new Option('SE/SFX Volume',
 			"I wonder why doesn't this option exists in official build? xd",
 			'sfxVolume',
 			PERCENT);
-		addOption(option);
 		option.scrollSpeed = 1;
 		option.minValue = 0.0;
 		option.maxValue = 1;
@@ -172,12 +188,12 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.decimals = 2;
 		option.onChange = onChangeSfxVolume;
 		sfxVolume = option;
+		addOption(option);
 		
 		var option:Option = new Option('Hitsound Volume',
 			'Funny notes do a \"Tick!\" sound when you hit them.',
 			'hitsoundVolume',
 			PERCENT);
-		addOption(option);
 		option.scrollSpeed = 1;
 		option.minValue = 0.0;
 		option.maxValue = 1;
@@ -185,6 +201,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.decimals = 2;
 		option.onChange = onChangeHitsoundVolume;
 		hitVolume = option;
+		addOption(option);
 
 		var option:Option = new Option('Vibrations',
 			"If checked, your device will vibrate at some cases.",

@@ -32,7 +32,7 @@ body:
     id: hslice-version
     attributes:
       label: "In which version of H-Slice this occurs in (if it's the build from the Actions tab, then also include the commit hash of the build)"
-      placeholder: "0.2.2"
+      placeholder: "0.2.3"
     validations:
       required: true
 

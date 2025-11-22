@@ -20,9 +20,7 @@ class OutdatedState extends WarningState
 		super(guh.toString(), () ->
 		{
 			CoolUtil.browserLoad("https://github.com/HRK-EXEX/H-Slice/releases");
-			if (onExit != null)
-				onExit();
-		}, onExit, nextState);
+		}, null, nextState);
 	}
 }
 
@@ -49,6 +47,6 @@ class FlashingState extends WarningState
 			ClientPrefs.data.flashing = false;
 			#end
 			ClientPrefs.saveSettings();
-		}, () -> {}, nextState);
+		}, null, nextState);
 	}
 }

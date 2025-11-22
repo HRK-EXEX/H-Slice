@@ -54,6 +54,7 @@ class InitState extends MusicBeatState
 		{
 			StoryMenuState.weekCompleted = FlxG.save.data.weekCompleted;
 		}
+
 		#if TOUCH_CONTROLS_ALLOWED
 		trace("Loading mobile data");
 		MobileData.init();

@@ -120,6 +120,8 @@ class MusicBeatState extends FlxState
 		var skip:Bool = FlxTransitionableState.skipNextTransOut;
 		// //? Should fix the funkin cursor for good
 		if(!(FlxG.mouse.cursor?.bitmapData is FunkinCursor)) FlxG.mouse.load(new FunkinCursor(0,0));
+		FlxG.mouse.useSystemCursor = !ClientPrefs.data.vsliceSystemCursor;
+
 		//nvm. too much lag
 		#if MODS_ALLOWED Mods.updatedOnState = false; #end
 

@@ -1,8 +1,11 @@
 name: Build the game
 
 on:
+  pull_request:
+    branches: [master, developmentalist]
   push:
-    branches: [master]
+    branches: [developmentalist]
+  workflow_dispatch:
 jobs:
   BuildCaches:
     name: ${{ matrix.name }}

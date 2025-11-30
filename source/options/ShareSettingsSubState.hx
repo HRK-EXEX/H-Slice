@@ -149,6 +149,7 @@ class ShareSettingsSubState extends BaseOptionsMenu {
             turnOFF('soundtray/VolMAX');
             showMsg('Importing settings was failed by error: ${x.message}\n\n${x.stack}');
         }
+		Main.fpsBg.relocate(0, 0, ClientPrefs.data.wideScreen);
     }
 
     function doImporting(str) {

@@ -4,6 +4,7 @@ import options.Option;
 
 class BaseGameSubState extends BaseOptionsMenu {
 	var logOption:Option;
+	var cursorOption:Option;
 
     public function new() {
         title = Language.getPhrase("vslice_menu","P-Slice settings");
@@ -59,6 +60,14 @@ class BaseGameSubState extends BaseOptionsMenu {
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Use P-Slice cursor',
+			'',
+			'vsliceSystemCursor',
+			BOOL);
+		option.onChange = changeCursor;
+		cursorOption = option;
+		addOption(option);
+
 		var option:Option = new Option('- Smoothness Speed',
 			'Change the speed of the Health Bar smoothness.\n0 = Disabled, 1 = No Smoothness.',
 			'vsliceSmoothNess',
@@ -99,6 +108,10 @@ class BaseGameSubState extends BaseOptionsMenu {
 		addOption(option);
         super();
     }
+
+	function changeCursor() {
+		FlxG.mouse.useSystemCursor = !cursorOption.getValue();
+	}
 
 	function updateLogType() {
 		ClientPrefs.data.loggingType = logOption.getValue();

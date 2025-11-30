@@ -31,7 +31,7 @@ class SustainSplash extends FlxSprite
 		rnd = new FlxRandom();
 
 		frames = Paths.getSparrowAtlas('holdCovers/holdCover-' + ClientPrefs.data.holdSkin);
-		noShader = ClientPrefs.data.holdSkin.toLowerCase().contains('classic') || ClientPrefs.data.noteShaders;
+		noShader = ClientPrefs.data.holdSkin.toLowerCase().contains('classic') || !ClientPrefs.data.noteShaders;
 
 		if (noShader) {
 			for (i => str in Note.colArray) {

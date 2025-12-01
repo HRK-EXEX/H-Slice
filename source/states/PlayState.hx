@@ -3256,7 +3256,7 @@ class PlayState extends MusicBeatState
 			
 			if (enableHoldSplash) {
 				for (holdSplash in susplashMap) {
-					if (holdSplash != null && (susEnds & 1 > 0)) holdSplash.showEndSplash();
+					// if (holdSplash != null && (susEnds & 1 > 0)) holdSplash.showEndSplash();
 					susEnds >>= 1;
 				}
 			}
@@ -4691,7 +4691,7 @@ class PlayState extends MusicBeatState
 
 			if (enableHoldSplash) {
 				var susplash = grpHoldSplashes.members[key+4];
-				if (susplash != null && !susplash.ending) susplash.showEndSplash(susplash.isTimerWorking());
+				if (susplash != null && !susplash.ending) susplash.showEndSplash();
 			}
 		}
 		callOnScripts('onKeyRelease', [key]);

@@ -288,7 +288,7 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 
 		messageText.screenCenter(Y);
 
-		// CoolUtil.deleteDirectoryWithFiles(video.target);
+		CoolUtil.deleteDirectoryWithFiles(video.target);
 		// File.saveContent("avail_codecs.txt", output);
 		FlxG.sound.play(Paths.sound('soundtray/VolMAX'), ClientPrefs.data.sfxVolume);
 		ClientPrefs.data.codec = backupCodec;

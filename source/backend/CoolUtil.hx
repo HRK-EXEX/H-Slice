@@ -533,16 +533,17 @@ class CoolUtil
 	// why doesn't it work
 	public static function deleteDirectoryWithFiles(path:String) {
 		#if sys
-		if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
-			var files = FileSystem.readDirectory(path);
-			var innerPath:String = "";
+		path = FileSystem.fullPath(path).replace(#if windows "/", "\\" #else "\\", "/" #end);
+		if (NativeFileSystem.exists(path) && NativeFileSystem.isDirectory(path)) {
+			var files = NativeFileSystem.readDirectory(path);
+			var converted:String = "";
 
 			for (file in files) {
-				innerPath = FileSystem.fullPath(path + "/" + file).replace(#if windows "/", "\\" #else "\\", "/" #end);
-				trace(innerPath);
-				if (FileSystem.isDirectory(innerPath)) {
-					deleteDirectoryWithFiles(innerPath);
-				} else FileSystem.deleteFile(innerPath);
+				converted = FileSystem.fullPath(path + "/" + file).replace(#if windows "/", "\\" #else "\\", "/" #end);
+				// trace(converted);
+				if (NativeFileSystem.isDirectory(converted)) {
+					deleteDirectoryWithFiles(converted);
+				} else NativeFileSystem.deleteFile(converted);
 			}
 
 			FileSystem.deleteDirectory(path);

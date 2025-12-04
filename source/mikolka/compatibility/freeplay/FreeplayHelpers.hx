@@ -10,6 +10,7 @@ import mikolka.vslice.components.crash.UserErrorSubstate;
 import openfl.utils.AssetType;
 import mikolka.vslice.freeplay.pslice.BPMCache;
 import mikolka.vslice.freeplay.FreeplayState;
+import mikolka.funkin.custom.NativeFileSystem;
 import backend.Song;
 import backend.Highscore;
 
@@ -92,7 +93,11 @@ class FreeplayHelpers {
 			offset += leWeek.songs.length;
 		}
 		Sys.print("\n");
-		File.saveContent(StorageUtil.getStorageDirectory()+"/cache/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
+		
+        if (!NativeFileSystem.exists('cache'))
+        	NativeFileSystem.createDirectory('cache');
+
+		File.saveContent(StorageUtil.getStorageDirectory()+"cache/bpmList.json", Json.stringify(BPMCache.freeplayBPMs));
         return songs;
     }
 

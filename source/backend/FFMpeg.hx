@@ -18,13 +18,13 @@ class FFMpeg {
     var height:Int;
     var image:Image;
     var bytes:Bytes;
-    var window:Window = null;
-    var buffer:Rectangle = null;
+    var window:Window;
+    var buffer:Rectangle;
 
     public var target = "render_video";
     public var fileName = '';
     public var fileExts = '.mp4';
-    public var wentPreview:String = null;
+    public var wentPreview:String;
     public var process:Process;
 
     public static var instance:FFMpeg;
@@ -32,12 +32,12 @@ class FFMpeg {
     public function new() {}
 
     public function init() {
-        if (FileSystem.exists(target)) {
-            if (!FileSystem.isDirectory(target)) {
-                FileSystem.deleteFile(target);
-                FileSystem.createDirectory(target);
+        if (NativeFileSystem.exists(target)) {
+            if (!NativeFileSystem.isDirectory(target)) {
+                NativeFileSystem.deleteFile(target);
+                NativeFileSystem.createDirectory(target);
             }
-        } else FileSystem.createDirectory(target);
+        } else NativeFileSystem.createDirectory(target);
 
         window = FlxG.stage.application.window;
 

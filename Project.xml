@@ -27,7 +27,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
 	<!-- Compiles mod support for H-Slice. Feel free to disable if you're making a source mod -->
-	<define name="MODS_ALLOWED" if="desktop || mobile" />
+	<define name="MODS_ALLOWED" />
 
 	<section unless="debug">
 		<!-- Adds the ability to use OpenFL asset lookup (defaults to sys if disabled)  -->

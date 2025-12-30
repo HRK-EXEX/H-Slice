@@ -1900,7 +1900,7 @@ class PlayState extends MusicBeatState
 
 			var gottaHitNote:Bool;
 
-			var swagNote:CastNote = Note.DEFAULT_CAST;
+			var swagNote:CastNote = { strumTime: 0, noteData: 0 };
 			var roundSus:Int;
 			var curStepCrochet:Float;
 			var sustainNote:CastNote;
@@ -1951,9 +1951,9 @@ class PlayState extends MusicBeatState
 					
 					swagNote = {
 						strumTime: songNotes[0],
-						noteData: noteColumn,
-						density: 1
+						noteData: noteColumn
 					};
+					if (skipGhostNotes && swagNote.density == null) swagNote.density = 1;
 					
 					if (Std.isOfType(songNotes[3], String))
 						swagNote.noteType = songNotes[3];
@@ -1973,8 +1973,6 @@ class PlayState extends MusicBeatState
 
 					var burst = extractSpamData(songNotes);
 					if (burst != null) swagNote.cmpSpam = burst;
-
-					if (songNotes[2] > 0.0) swagNote.holdLength = songNotes[2];
 					
 					swagNote.noteData |= gottaHitNote ? 1<<8 : 0; // mustHit
 					swagNote.noteData |= (section.gfSection && (gfSide ? gottaHitNote : !gottaHitNote)) || songNotes[3] == 'GF Sing' || songNotes[3] == 4 ? 1<<11 : 0; // gfNote
@@ -1983,27 +1981,32 @@ class PlayState extends MusicBeatState
 					
 					unspawnNotes.push(swagNote);
 
-					curStepCrochet = 15000 / daBpm;
-					roundSus = Math.round(swagNote.holdLength / curStepCrochet);
-					if (roundSus > 0)
+					if (songNotes[2] > 0.0)
 					{
-						for (susNote in 0...roundSus + 1)
+						swagNote.holdLength = songNotes[2];
+
+						curStepCrochet = 15000 / daBpm;
+						roundSus = Math.round(swagNote.holdLength / curStepCrochet);
+						if (roundSus > 0)
 						{
-							sustainNote = {
-								strumTime: swagNote.strumTime + curStepCrochet * susNote,
-								noteData: swagNote.noteData,
-								density: swagNote.density,
-								noteType: swagNote.noteType
-							};
-							
-							sustainNote.noteData |= 1<<9; // isHold
-							sustainNote.noteData |= susNote == roundSus ? 1<<10 : 0; // isHoldEnd
+							for (susNote in 0...roundSus + 1)
+							{
+								sustainNote = {
+									strumTime: swagNote.strumTime + curStepCrochet * susNote,
+									noteData: swagNote.noteData,
+									noteType: swagNote.noteType
+								};
+								if (!Math.isNaN(swagNote.density)) sustainNote.density = swagNote.density;
 
-							unspawnSustainNotes.push(sustainNote);
+								sustainNote.noteData |= 1<<9; // isHold
+								sustainNote.noteData |= susNote == roundSus ? 1<<10 : 0; // isHoldEnd
 
-							++sustainNoteCnt;
+								unspawnSustainNotes.push(sustainNote);
+
+								++sustainNoteCnt;
+							}
+							sustainTotalCnt += sustainNoteCnt;
 						}
-						sustainTotalCnt += sustainNoteCnt;
 					}
 					
 					if (!noteTypes.contains(swagNote.noteType))
@@ -2300,7 +2303,7 @@ class PlayState extends MusicBeatState
 		if (bfVocal) desyncTimes[1] = vocals.time - Conductor.songPosition;
 		if (opVocal) desyncTimes[2] = opponentVocals.time - Conductor.songPosition;
 
-		for (value in desyncTimes) if (Math.abs(value) > thresholdTime) resyncVocals();
+		for (value in desyncTimes) if (Math.abs(value) > thresholdTime * playbackRate) resyncVocals();
 	}
 
 	function resyncVocals():Void
@@ -3011,6 +3014,83 @@ class PlayState extends MusicBeatState
 	
 	var currSus:Array<Bool> = [];
 	var prevSus:Array<Bool> = [];
+
+	inline function applySkipRange(from:Int, to:Int) {
+		var idx = from;
+
+		while (idx < to) {
+			var n = unspawnNotes[idx];
+			var data = n.noteData;
+
+			var castHold = (data & (1 << 9)) != 0;
+			var castMust = (data & (1 << 8)) != 0;
+			var lane = (data + (castMust ? 4 : 0)) & 255;
+
+			skipHit |= 1 << lane;
+			++skipCnt;
+
+			if (cpuControlled) {
+				if (!castHold)
+					castMust ? skipBf++ : skipOp++;
+			} else {
+				castMust ? noteMissCommon(lane) : skipOp++;
+			}
+
+			if (enableHoldSplash && castHold && (data & (1 << 10)) != 0)
+				susEnds |= 1 << lane;
+
+			if (enableSplash && !castHold &&
+				(cpuControlled || !castMust) &&
+				splashMoment[lane] < splashCount)
+			{
+				var arr = splashUsing[lane];
+				if (arr.length < splashCount) {
+					skipNoteSplash.recycleNote(n);
+					spawnNoteSplashOnNote(skipNoteSplash);
+				}
+			}
+
+			if (castMust) skipBfCNote = n; else skipOpCNote = n;
+			++idx;
+		}
+	}
+
+	inline function findSkipBoundary(start:Int, fp:Float, kill:Float):Int {
+		var lo = start;
+		var hi = unspawnNotes.length;
+
+		while (lo < hi) {
+			var mid = (lo + hi) >>> 1;
+			var n = unspawnNotes[mid];
+
+			var data = n.noteData;
+			var isHold = (data & (1 << 9)) != 0;
+			var limit = isHold ? n.strumTime + kill : n.strumTime;
+
+			if (fp > limit)
+				lo = mid + 1;
+			else
+				hi = mid;
+		}
+
+		return lo;
+	}
+
+	inline function fastSkipRegularNotes(fp:Float):Bool {
+		if (!optimizeSpawnNote || !skipSpawnNote)
+			return false;
+
+		var end = findSkipBoundary(totalCnt, fp, noteKillOffset);
+
+		if (end > totalCnt) {
+			applySkipRange(totalCnt, end);
+			totalCnt = end;
+			return true;
+		}
+
+		return false;
+	}
+
 	public function noteSpawn()
 	{
 		timeout = nanoPosition ? CoolUtil.getNanoTime() : Timer.stamp();
@@ -3057,7 +3137,7 @@ class PlayState extends MusicBeatState
 							if (castMust) skipBf += bulkSkipCount;
 							else skipOp += bulkSkipCount;
 							skipCnt += bulkSkipCount;
-							if (castMust) skipBfCNote = targetNote; else skipOpCNote = spam.seedNote;
+							if (castMust) skipBfCNote = spam.seedNote; else skipOpCNote = spam.seedNote;
 
 							if (spam.remaining <= 0) {
 								spamNotes.remove(spam);
@@ -3080,18 +3160,20 @@ class PlayState extends MusicBeatState
 			}
 		}
 		
+		fixedPosition = Conductor.songPosition - ClientPrefs.data.noteOffset;
+		limitCount = notes.countLiving();
+
+		fastSkipRegularNotes(fixedPosition);
+
 		if (unspawnNotes.length > totalCnt)
 		{
-			limitCount = notes.countLiving();
 			targetNote = unspawnNotes[totalCnt];
-			fixedPosition = Conductor.songPosition - ClientPrefs.data.noteOffset;
-			
-			// for initalize
 			initSpawnInfo(targetNote);
 			isDisplay = targetNote.strumTime - fixedPosition < shownTime;
 
 			while (isDisplay && limitCount < limitNotes)
 			{
+
 				canBeHit = fixedPosition > targetNote.strumTime; // false is before, true is after
 				tooLate = fixedPosition > targetNote.strumTime + noteKillOffset;
 				noteJudge = castHold ? tooLate : canBeHit;
@@ -3351,6 +3433,7 @@ class PlayState extends MusicBeatState
 			opCombo += skipOp; opSideHit += skipOp;
 			combo += skipBf; bfSideHit += skipBf;
 			skipTotalCnt += skipCnt;
+			daHit = true;
 
 			if (skipOp > 0 && !camZooming) camZooming = true;
 

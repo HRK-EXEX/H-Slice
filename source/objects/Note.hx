@@ -49,7 +49,7 @@ typedef CastNote = {
 	// 15th bit is for blockHit
 	// 16th bit is for ignoreNote
 	var noteData:Int;
-	var density:Float;
+	@:optional var density:Float;
 	@:optional var holdLength:Null<Float>;
 	@:optional var noteType:String;
 	@:optional var cmpSpam:Array<Dynamic>;
@@ -610,7 +610,7 @@ class Note extends FlxSprite
 		blockHit = toBool(target.noteData & (1<<14));				 		 // blockHit
 		ignoreNote = toBool(target.noteData & (1<<15));				 		 // ignoreNote
 		noteData = target.noteData & 3;
-		density = target.density;
+		density = target.density ?? 1;
 
 		hitsoundDisabled = isSustainNote;
 

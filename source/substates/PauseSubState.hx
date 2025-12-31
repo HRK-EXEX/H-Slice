@@ -268,15 +268,10 @@ class PauseSubState extends MusicBeatSubstate
 		}
 
 		updateSkipTextStuff();
-		if (controls.UI_UP_P)
+		if (controls.UI_UP_P || controls.UI_DOWN_P)
 		{
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
-			changeSelection(-1, true);
-		}
-		if (controls.UI_DOWN_P)
-		{
-			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
-			changeSelection(1, true);
+			changeSelection(controls.UI_UP_P ? -1 : 1, true);
 		}
 
 		var daSelected:String = menuItems[curSelected];
@@ -335,10 +330,18 @@ class PauseSubState extends MusicBeatSubstate
 		{
 			if (menuItems == difficultyChoices)
 			{
+				// prevent to crash some unusual case
+				var prvDiffText = Difficulty.getString();
+				var songName = PlayState.SONG.song;
+				if (songName.toLowerCase().endsWith("-" + prvDiffText.toLowerCase())) {
+					PlayState.SONG.song = songName.substring(0, songName.length - prvDiffText.length - 1);
+				}
+
+				var curDiffText = selectedOption;
+
 				var songLowercase:String = Paths.formatToSongPath(PlayState.SONG.song);
 				var useErect = FreeplayMeta.getMeta(songLowercase).allowErectVariants;
-				if(useErect){
-					var curDiffText = selectedOption;
+				if (useErect){
 					if(songLowercase.endsWith("-erect") && curDiffText != "Erect" && curDiffText != "Nightmare"){
 						//not nightmare anymore
 						songLowercase = songLowercase.substring(0,songLowercase.length-"-erect".length);
@@ -348,6 +351,7 @@ class PauseSubState extends MusicBeatSubstate
 						songLowercase = songLowercase+"-erect";
 					}
 				}
+
 				var poop:String = Highscore.formatSong(songLowercase, curSelected);
 				try
 				{
@@ -552,18 +556,14 @@ class PauseSubState extends MusicBeatSubstate
 
 	function changeSelection(delta:Float, usePrecision:Bool = false)
 	{
-		if (usePrecision)
-		{
-			if(delta != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+		if (usePrecision) {
 			curSelected = FlxMath.wrap(curSelected + Std.int(delta), 0, menuItems.length - 1);
 			curSelectedPartial = curSelected;
-		}
-		else
-		{
+		} else {
 			curSelectedPartial = FlxMath.bound(curSelectedPartial + delta, 0, menuItems.length - 1);
-			if(curSelected != Math.round(curSelectedPartial)) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 			curSelected = Math.round(curSelectedPartial);
 		}
+
 		for (num => item in grpMenuShit.members)
 		{
 			item.targetY = num - curSelectedPartial;
@@ -580,7 +580,6 @@ class PauseSubState extends MusicBeatSubstate
 		}
 		missingText.visible = false;
 		missingTextBG.visible = false;
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.sfxVolume);
 	}
 
 	function regenMenu():Void

@@ -340,7 +340,8 @@ class Paths
 				bitmap = NativeFileSystem.getBitmap(file);
 				if (bitmap == null)
 				{
-					trace('Bitmap not found: $file | key: $key');
+					trace('Bitmap not found: $file');
+					// trace('Bitmap not found: $file | key: $key');
 					return null;
 				}
 			}

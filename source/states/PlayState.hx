@@ -1597,7 +1597,7 @@ class PlayState extends MusicBeatState
 	var notesStr:String;
 	public dynamic function updateScoreText()
 	{
-		targetHealth = health*50;
+		targetHealth = health * 50;
 		if (!practiceMode) {
 			updateScoreStr = Language.getPhrase('rating_$ratingName', ratingName);
 			if (totalPlayed != 0)
@@ -1648,7 +1648,6 @@ class PlayState extends MusicBeatState
 			
 		}
 		scoreTxt.text = tempScoreStr;
-		hpShowStr = null;
 	}
 
 	public dynamic function fullComboFunction()
@@ -1741,10 +1740,11 @@ class PlayState extends MusicBeatState
 	public function skipDialogue()
 	{
 		callOnScripts('onSkipDialogue', [dialogueCount]);
-		stagesFunc(function(stage:BaseStage) stage.onSkipDialogue(dialogueCount));
+		stagesFunc(stage -> stage.onSkipDialogue(dialogueCount));
 	}
 
 	var started:Bool = false;
+	var songText:String = "";
 	function startSong():Void
 	{
 		startingSong = false;
@@ -1788,8 +1788,10 @@ class PlayState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence (with Time Left)
-		if (autoUpdateRPC)
-			DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter(), true, songLength);
+		if (autoUpdateRPC) {
+			songText = '${SONG.song} ($storyDifficultyText)';
+			DiscordClient.changePresence(detailsText, songText, iconP2.getCharacter(), true, songLength);
+		}
 		#end
 		setOnScripts('songLength', songLength);
 		callOnScripts('onSongStart');
@@ -2268,7 +2270,8 @@ class PlayState extends MusicBeatState
 		super.onFocusLost();
 		if (!paused && health > 0 && autoUpdateRPC)
 		{
-			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
+			songText = '${SONG.song} ($storyDifficultyText)';
+			DiscordClient.changePresence(detailsPausedText, songText, iconP2.getCharacter());
 		}
 	}
 	#end
@@ -2279,19 +2282,14 @@ class PlayState extends MusicBeatState
 	function resetRPC(?showTime:Bool = false)
 	{
 		#if DISCORD_ALLOWED
-		if (!autoUpdateRPC)
-			return;
+		if (!autoUpdateRPC) return;
+		
+		songText = '${SONG.song} ($storyDifficultyText)';
+		// trace(songText);
 
-		if (showTime)
-			DiscordClient.changePresence(detailsText, SONG.song
-				+ " ("
-				+ storyDifficultyText
-				+ ")", iconP2.getCharacter(), true,
-				songLength
-				- Conductor.songPosition
-				- ClientPrefs.data.noteOffset);
-		else
-			DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
+		if (showTime) {
+			DiscordClient.changePresence(detailsText, songText, iconP2.getCharacter(), true, songLength - Conductor.songPosition - ClientPrefs.data.noteOffset);
+		} else DiscordClient.changePresence(detailsText, songText, iconP2.getCharacter());
 		#end
 	}
 
@@ -2606,7 +2604,10 @@ class PlayState extends MusicBeatState
 
 		updateIconsScale(globalElapsed);
 		updateIconsPosition();
+
+		// if (bfHit || daHit) {
 		updateScoreText();
+		// }
 		
 		if (!overHealth) healthLerp = healthLerper();
 		else {
@@ -3292,7 +3293,6 @@ class PlayState extends MusicBeatState
 		if (castMust) skipBfCNote = targetNote; else skipOpCNote = targetNote;
 	}
 
-	var index:Int = 0;
 	var noteUpdateJudge:Bool = false;
 	var processedReal:Int = 0;
 	var processedRealTimer:Float = 0;
@@ -3409,15 +3409,6 @@ class PlayState extends MusicBeatState
 	var skipArray:Array<Dynamic> = [];
 	var skipAnim:Vector<Bool> = new Vector(3, false);
 	var skipHitSearch:Int;
-
-	inline function scriptCall(funcName:String, hsArgs:Dynamic) {
-		skipResult = callOnLuas(funcName, skipArray);
-		if (skipResult != LuaUtils.Function_Stop)
-			if (skipResult != LuaUtils.Function_StopHScript)
-				if (skipResult != LuaUtils.Function_StopAll)
-					skipResult = callOnHScript(funcName, hsArgs);
-	}
-
 	public function noteFinalize() {
 		skipAnim.fill(false);
 		skipCnt = skipOp + skipBf;
@@ -3439,7 +3430,7 @@ class PlayState extends MusicBeatState
 			
 			if (enableHoldSplash) {
 				for (holdSplash in susplashMap) {
-					if (holdSplash != null && (susEnds & 1 > 0)) holdSplash.showEndSplash();
+					// if (holdSplash != null && (susEnds & 1 > 0)) holdSplash.showEndSplash();
 					susEnds >>= 1;
 				}
 			}
@@ -3459,7 +3450,7 @@ class PlayState extends MusicBeatState
 					else loopVector[1] = skipNotes.recycle(Note).recycleNote(skipBfCNote);
 					doAnim(loopVector[1]);
 				}
-				
+
 				if (showPopups) {
 					if (!changePopup && skipAnim[2]) popUpHitNote = loopVector[1];
 					else if (changePopup && skipAnim[0]) {
@@ -3468,20 +3459,18 @@ class PlayState extends MusicBeatState
 				}
 
 				if (skipNoteEvent) {
-					for (i in 0...loopVector.length) {
-						if (!skipAnim[i+1]) continue;
-						var daNote = loopVector[i];
-						var scriptTarget = [Std.int(skipOp), Std.int(skipBf)];
+					var scriptTarget = [skipOp, skipBf];
+					for (index => skippedAmount in scriptTarget) {
+						if (skippedAmount == 0) continue;
+						else if (index == 1 && !cpuControlled) break;
+
+						var daNote = loopVector[index];
 						skipArray = [0, Std.int(Math.abs(daNote.noteData)), daNote.noteType, daNote.isSustainNote];
-						
-						for (shit in 0...scriptTarget[index]) {
-							var targetStr = index == 0 ? 'opponent' : 'good';
-							if (index == 0 || cpuControlled) {
-								for (i in 0...shit) {
-									if (noteHitPreEvent) scriptCall(targetStr + 'NoteHitPre', [daNote]);
-									if (noteHitEvent) scriptCall(targetStr + 'NoteHit', [daNote]);
-								}
-							}
+
+						var targetStr = index == 0 ? 'opponent' : 'good';
+						for (i in 0...skippedAmount) {
+							if (noteHitPreEvent) scriptCall(targetStr + 'NoteHitPre', [daNote]);
+							if (noteHitEvent) scriptCall(targetStr + 'NoteHit', [daNote]);
 						}
 					}
 				}
@@ -3489,6 +3478,14 @@ class PlayState extends MusicBeatState
 		}
 
 		healthUpdate(bfHitFrame + skipBf + bfHitSus, opHitFrame + skipOp + opHitSus);
+	}
+	
+	inline function scriptCall(funcName:String, hsArgs:Dynamic) {
+		skipResult = callOnLuas(funcName, skipArray);
+		if (skipResult != LuaUtils.Function_Stop)
+			if (skipResult != LuaUtils.Function_StopHScript)
+				if (skipResult != LuaUtils.Function_StopAll)
+					skipResult = callOnHScript(funcName, hsArgs);
 	}
 	
 	var sortOrder = false;
@@ -3694,8 +3691,10 @@ class PlayState extends MusicBeatState
 		openSubState(new PauseSubState());
 
 		#if DISCORD_ALLOWED
-		if (autoUpdateRPC)
-			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
+		if (autoUpdateRPC) {
+			songText = '${SONG.song} ($storyDifficultyText)';
+			DiscordClient.changePresence(detailsPausedText, songText, iconP2.getCharacter());
+		}
 		#end
 	}
 
@@ -3791,8 +3790,10 @@ class PlayState extends MusicBeatState
 
 				#if DISCORD_ALLOWED
 				// Game Over doesn't get his its variable because it's only used here
-				if (autoUpdateRPC)
-					DiscordClient.changePresence("Game Over - " + detailsText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
+				if (autoUpdateRPC) {
+					songText = '${SONG.song} ($storyDifficultyText)';
+					DiscordClient.changePresence("Game Over - " + detailsText, songText, iconP2.getCharacter());
+				}
 				#end
 				isDead = true;
 				return true;
@@ -4874,7 +4875,7 @@ class PlayState extends MusicBeatState
 
 			if (enableHoldSplash) {
 				var susplash = grpHoldSplashes.members[key+4];
-				if (susplash != null && !susplash.ending) susplash.showEndSplash(susplash.isTimerWorking());
+				if (susplash != null && !susplash.ending) susplash.showEndSplash();
 			}
 		}
 		callOnScripts('onKeyRelease', [key]);

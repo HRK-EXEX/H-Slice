@@ -104,7 +104,7 @@ class SustainSplash extends FlxSprite
 			offset.set(PlayState.isPixelStage ? 112.5 : 106.25, 100);
 		} else if (holding) {
 			startCrochet = (Conductor.stepCrochet - Conductor.songPosition + note.strumTime) * 0.001 / playbackRate;
-			timer.start(startCrochet, t -> showEndSplash(true));
+			timer.start(startCrochet, t -> showEndSplash());
 		}
 	}
 
@@ -112,10 +112,9 @@ class SustainSplash extends FlxSprite
 		return timer.active;
 	}
 
-	public function showEndSplash(anim:Bool = true) {
+	public function showEndSplash() {
 		holding = false; ending = true;
-		if (timer.active) timer.cancel();
-		if (anim && animation != null && note != null)
+		if (animation != null && note != null && note.strum != null)
 		{
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note?.strum?.alpha);
 			animation.play('end${noShader ? Std.string(note?.noteData) : ''}', true, false, 0);
@@ -124,6 +123,14 @@ class SustainSplash extends FlxSprite
 			clipRect = null;
 			animation.finishCallback = idkEither -> kill();
 			return;
-		} else kill();
+		} else {
+			trace(animation != null, note != null, note.strum != null);
+ 			kill();
+		}
+	}
+
+	override function kill() {
+		ending = false;
+		super.kill();
 	}
 }

@@ -221,11 +221,6 @@ class FreeplayState extends MusicBeatState
 		#if TOUCH_CONTROLS_ALLOWED
 		addTouchPad('LEFT_FULL', 'A_B_X_Y');
 		#end
-		
-		if (ClientPrefs.data.disableGC && !MemoryUtil.isGcEnabled) {
-			MemoryUtil.enable();
-			MemoryUtil.collect(true);
-		}
 	}
 
 	override function closeSubState()
@@ -328,7 +323,12 @@ class FreeplayState extends MusicBeatState
 					WeekData.setDirectoryFromWeek();
 					loadingText.visible = loadingTextBG.visible = false;
 					scoreText.visible = scoreBG.visible = diffText.visible = bottomBG.visible = bottomText.visible = true;
-					
+
+					if (ClientPrefs.data.disableGC && !MemoryUtil.isGcEnabled) {
+						MemoryUtil.enable();
+						MemoryUtil.collect(true);
+					}
+
 					changeSelection();
 					updateTexts(delayTime);
 				}

@@ -80,14 +80,14 @@ class CoolUtil
 	 * @param code Integer (use fastCodeAt)
 	 */
 	static var format:StringBuf = new StringBuf();
-	inline public static function fillNumber(value:Dynamic, digits:Int, code:Int) {
-		var defined:String = customNumberDelimiter(value);
+	inline public static function fillNumber(value:Dynamic, digits:Int, code:Int, delimit:Null<Bool> = null) {
+		var defined:String = customNumberDelimiter(value, delimit);
 
 		var length:Int = defined.length;
 		var str:String = null;
 		format = new StringBuf();
 
-		if (ClientPrefs.data.numberFormat) 
+		if (delimit == null && ClientPrefs.data.numberFormat || delimit)
 			digits += Std.int(Math.max(0.0, (digits - 1) / 3));
 
 		if (length < digits) {
@@ -263,9 +263,7 @@ class CoolUtil
 		return Math.round(value);
 	}
 
-	inline public static function customNumberDelimiter(value:Dynamic) {
-		if (!ClientPrefs.data.numberFormat || value == null) return value;
-
+	inline public static function customNumberDelimiter(value:Dynamic, delimit:Null<Bool> = null) {
 		var defined:String = null;
 		if (value is String) {
 			if (Std.parseFloat(value) != Math.NaN) {
@@ -273,7 +271,8 @@ class CoolUtil
 			} else throw "Given string, but It cannot convert to number";
 		} else if (value is Float || value is Int) {
 			defined = Std.string(value);
-		} else throw "It's invalid type";
+		} else throw "It's invalid type. You need the number or numerical string.";
+		if (!ClientPrefs.data.numberFormat || !delimit) return Std.string(value);
 		
 		// for number delimiter
 		var cnt:Int = -1;
@@ -533,16 +532,17 @@ class CoolUtil
 	// why doesn't it work
 	public static function deleteDirectoryWithFiles(path:String) {
 		#if sys
-		if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
-			var files = FileSystem.readDirectory(path);
-			var innerPath:String = "";
+		path = FileSystem.fullPath(path).replace(#if windows "/", "\\" #else "\\", "/" #end);
+		if (NativeFileSystem.exists(path) && NativeFileSystem.isDirectory(path)) {
+			var files = NativeFileSystem.readDirectory(path);
+			var converted:String = "";
 
 			for (file in files) {
-				innerPath = FileSystem.fullPath(path + "/" + file).replace(#if windows "/", "\\" #else "\\", "/" #end);
-				trace(innerPath);
-				if (FileSystem.isDirectory(innerPath)) {
-					deleteDirectoryWithFiles(innerPath);
-				} else FileSystem.deleteFile(innerPath);
+				converted = FileSystem.fullPath(path + "/" + file).replace(#if windows "/", "\\" #else "\\", "/" #end);
+				// trace(converted);
+				if (NativeFileSystem.isDirectory(converted)) {
+					deleteDirectoryWithFiles(converted);
+				} else NativeFileSystem.deleteFile(converted);
 			}
 
 			FileSystem.deleteDirectory(path);

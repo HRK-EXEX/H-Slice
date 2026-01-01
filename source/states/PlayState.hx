@@ -2746,7 +2746,7 @@ class PlayState extends MusicBeatState
 
 						var lengths:Array<Int> = [Std.string(nps[3]).length, Std.string(nps[4]).length, Std.string(nps[5]).length];
 						var len:Null<Int> = CoolUtil.integerArrayUtil(lengths, 0);
-						var npsStr:Array<String> = [for (n in nps) fillNum(n, len, ' '.code)];
+						var npsStr:Array<String> = [for (n in nps) fillNum(n, len, ' '.code, numberDelimit)];
 
 						npsInfo = '${npsStr[0]}/${npsStr[3]}\n'
 							+ '${npsStr[1]}/${npsStr[4]}\n'
@@ -3018,6 +3018,17 @@ class PlayState extends MusicBeatState
 
 		while (idx < to) {
 			var n = unspawnNotes[idx];
+
+			if (n.cmpSpam != null) {
+				spamNotes.push({
+					remaining: (n.cmpSpam[0]),
+					density: n.cmpSpam[1],
+					seedNote: n
+				});
+
+				n.cmpSpam = null;
+				continue;
+			}
 			var data = n.noteData;
 
 			var castHold = (data & (1 << 9)) != 0;
@@ -3025,13 +3036,12 @@ class PlayState extends MusicBeatState
 			var lane = (data + (castMust ? 4 : 0)) & 255;
 
 			skipHit |= 1 << lane;
-			++skipCnt;
 
 			if (cpuControlled) {
 				if (!castHold)
-					castMust ? skipBf += n.density : skipOp += n.density;
+					castMust ? skipBf += n.density ?? 1 : skipOp += n.density ?? 1;
 			} else {
-				castMust ? noteMissCommon(lane) : skipOp += n.density;
+				castMust ? noteMissCommon(lane) : skipOp += n.density ?? 1;
 			}
 
 			if (enableHoldSplash && castHold && (data & (1 << 10)) != 0)
@@ -3276,8 +3286,8 @@ class PlayState extends MusicBeatState
 		if (!timeLimit) ++skipTimeOut;
 
 		if (cpuControlled) {
-			if (!castHold) castMust ? skipBf += targetNote.density : skipOp += targetNote.density;
-		} else castMust ? noteMissCommon(availNoteData) : skipOp += targetNote.density;
+			if (!castHold) castMust ? skipBf += targetNote.density ?? 1 : skipOp += targetNote.density ?? 1;
+		} else castMust ? noteMissCommon(availNoteData) : skipOp += targetNote.density ?? 1;
 
 		if (enableHoldSplash) susEnds |= (targetNote.noteData & 1<<10) > 0 ? 1 << availNoteData : 0;
 		
@@ -3417,7 +3427,6 @@ class PlayState extends MusicBeatState
 			opCombo += skipOp; opSideHit += skipOp;
 			combo += skipBf; bfSideHit += skipBf;
 			skipTotalCnt += skipCnt;
-			daHit = true;
 
 			if (skipOp > 0 && !camZooming) camZooming = true;
 
@@ -3468,7 +3477,7 @@ class PlayState extends MusicBeatState
 						skipArray = [0, Std.int(Math.abs(daNote.noteData)), daNote.noteType, daNote.isSustainNote];
 
 						var targetStr = index == 0 ? 'opponent' : 'good';
-						for (i in 0...skippedAmount) {
+						for (i in 0...Std.int(skippedAmount)) {
 							if (noteHitPreEvent) scriptCall(targetStr + 'NoteHitPre', [daNote]);
 							if (noteHitEvent) scriptCall(targetStr + 'NoteHit', [daNote]);
 						}
@@ -4734,7 +4743,7 @@ class PlayState extends MusicBeatState
 				var comma = numberDelimit && delimiter % 3 == 0;
 				if (changePopup || combo >= 10 || combo == 0) {
 					numScore = popUpGroup.spawn();
-					numScore.setupNumberData(uiPrefix + 'num' + Std.int(number) + uiPostfix, index, comboDigit, numberDelimit);
+					numScore.setupNumberData(uiPrefix + 'num' + Std.int(Math.abs(number)) + uiPostfix, index, comboDigit, numberDelimit);
 
 					if (comma && index > 0 && commaImg) {
 						numScore = popUpGroup.spawn();

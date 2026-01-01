@@ -1953,7 +1953,7 @@ class PlayState extends MusicBeatState
 						strumTime: songNotes[0],
 						noteData: noteColumn
 					};
-					if (skipGhostNotes && swagNote.density == null) swagNote.density = 1;
+					if (skipGhostNotes && (swagNote.density == null || swagNote.density > 1)) swagNote.density = 1;
 					
 					if (Std.isOfType(songNotes[3], String))
 						swagNote.noteType = songNotes[3];
@@ -2606,10 +2606,7 @@ class PlayState extends MusicBeatState
 
 		updateIconsScale(globalElapsed);
 		updateIconsPosition();
-
-		if (bfHit || daHit) {
-			updateScoreText();
-		}
+		updateScoreText();
 		
 		if (!overHealth) healthLerp = healthLerper();
 		else {
@@ -3031,9 +3028,9 @@ class PlayState extends MusicBeatState
 
 			if (cpuControlled) {
 				if (!castHold)
-					castMust ? skipBf++ : skipOp++;
+					castMust ? skipBf += n.density : skipOp += n.density;
 			} else {
-				castMust ? noteMissCommon(lane) : skipOp++;
+				castMust ? noteMissCommon(lane) : skipOp += n.density;
 			}
 
 			if (enableHoldSplash && castHold && (data & (1 << 10)) != 0)
@@ -3063,11 +3060,7 @@ class PlayState extends MusicBeatState
 			var mid = (lo + hi) >>> 1;
 			var n = unspawnNotes[mid];
 
-			var data = n.noteData;
-			var isHold = (data & (1 << 9)) != 0;
-			var limit = isHold ? n.strumTime + kill : n.strumTime;
-
-			if (fp > limit)
+			if (fp > n.strumTime)
 				lo = mid + 1;
 			else
 				hi = mid;

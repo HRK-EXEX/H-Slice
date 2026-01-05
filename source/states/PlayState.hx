@@ -733,7 +733,7 @@ class PlayState extends MusicBeatState
 		timeTxt.alpha = 0;
 		timeTxt.borderSize = 2;
 		timeTxt.antialiasing = ClientPrefs.data.antialiasing;
-		timeTxt.visible = updateTime = showTime;
+		timeTxt.visible = updateTime && showTime;
 		if (downScroll)
 			timeTxt.y = FlxG.height - 44;
 		if (ClientPrefs.data.timeBarType == 'Song Name')
@@ -1906,6 +1906,7 @@ class PlayState extends MusicBeatState
 			var roundSus:Int;
 			var curStepCrochet:Float;
 			var sustainNote:CastNote;
+			var burst = null;
 
 			var chartNoteData:Int = 0;
 			var strumTimeVector:Vector<Float> = new Vector(8, 0.0);
@@ -1973,7 +1974,7 @@ class PlayState extends MusicBeatState
 						return null;
 					}
 
-					var burst = extractSpamData(songNotes);
+					burst = extractSpamData(songNotes);
 					if (burst != null) swagNote.cmpSpam = burst;
 					
 					swagNote.noteData |= gottaHitNote ? 1<<8 : 0; // mustHit
@@ -3015,9 +3016,11 @@ class PlayState extends MusicBeatState
 
 	inline function applySkipRange(from:Int, to:Int) {
 		var idx = from;
+		var n = unspawnNotes[idx];
+		var data = 0;
 
 		while (idx < to) {
-			var n = unspawnNotes[idx];
+			n = unspawnNotes[idx];
 
 			if (n.cmpSpam != null) {
 				spamNotes.push({
@@ -3029,7 +3032,7 @@ class PlayState extends MusicBeatState
 				n.cmpSpam = null;
 				continue;
 			}
-			var data = n.noteData;
+			data = n.noteData;
 
 			var castHold = (data & (1 << 9)) != 0;
 			var castMust = (data & (1 << 8)) != 0;

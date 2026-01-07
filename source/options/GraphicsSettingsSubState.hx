@@ -46,7 +46,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('WiggleEffect <-> GlitchEffect', //Name
-			"If checked, swaps the WiggleEffect and GlitchEffect. It's for vs dave and bambi mods.", //Description
+			"If checked, WiggleEffect and GlitchEffect will be swapped. It's for vs dave and bambi mods.", //Description
 			'swapGlitchWiggle',
 			BOOL);
 		addOption(option);

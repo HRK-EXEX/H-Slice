@@ -34,13 +34,13 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
         var option:Option = new Option('Show Notes',
-			"If unchecked, appearTime sets to 0.\nAll notes will be processed as skipped notes.\nBotplay is forcibly enabled.",
+			"If unchecked, appearTime is set to 0.\nAll notes will be processed as skipped notes.\nBotplay is forced on.",
 			'showNotes',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Show Notes again after Skip',
-			"If checked, it tries preventing notes from showing only halfway through.",
+			"If checked, it tries to prevent notes from showing only halfway through.",
 			'showAfter',
 			BOOL);
 		addOption(option);
@@ -52,7 +52,7 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		
         var option:Option = new Option('Sort Notes:',
-			"If checked, the notes array is sorted every frame when notes are added.\nUnchecking improves performance, especially if a lot of notes are displayed.\nDefault: \"After Note Finalized\"",
+			"If checked, the notes array is sorted every frame when notes are added.\nUsing 'Never' improves performance, especially if a lot of notes are displayed.\nDefault: \"After Note Finalized\"",
 			'sortNotes',
 			STRING,
 			SORT_PATTERN); //Variable type
@@ -71,7 +71,7 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Max Notes Shown:',
-			"How many notes do you wanna display? To unlimited, set the value to 0.",
+			"What should be the max amount of notes rendered onscreen? To remove this limit, set the value to 0.",
 			'limitNotes',
 			INT);
 		option.scrollSpeed = 30;
@@ -84,10 +84,10 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Invisible overlapped notes:',
-			"It hides the overlapped note which doesn't notice easily by pixels.",
+			"It hides the overlapped note which can't be easily noticed by pixels.",
 			'hideOverlapped',
 			FLOAT);
-		option.displayFormat = "%v pixel";
+		option.displayFormat = "%v pixels";
 		option.scrollSpeed = 10.0;
 		option.minValue = 0.0;
 		option.maxValue = 10.0;
@@ -108,13 +108,13 @@ class OptimizeSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
         var option:Option = new Option(' - Break on Time Limit Exceeded',
-			"If checked, breaks from note spawn loop if the time limit is exceeded.\nIt may have good performance on some scenes.",
+			"If checked, the note spawn loop cancels if the time limit is exceeded.\nIt may have good performance on some scenes.",
 			'breakTimeLimit',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Optimize Process for Spawned Note',
-			"If checked, it judges whether or not to do hit process\nimmediately when a note spawned. It boosts game performance massively,\nbut it only works in specific situations. If you don't understand, enable this.",
+			"If checked, it judges whether or not to do hit logic\nimmediately when a note spawned. It boosts game performance massively,\nbut it only works in specific situations. If you don't understand, enable this.",
 			'optimizeSpawnNote',
 			BOOL);
 		addOption(option);

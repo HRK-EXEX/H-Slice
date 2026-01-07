@@ -11,13 +11,13 @@ class BaseGameSubState extends BaseOptionsMenu {
         rpcTitle = "P-Slice settings menu";
 
         var option:Option = new Option('Use New Freeplay State',
-			'If disabled, it uses the Freeplay State of Psych Engine instead new one.',
+			"If disabled, it uses Psych Engine's Freeplay State instead of the new one.",
 			'vsliceFreeplay',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Freeplay Dynamic Coloring',
-			'Enables dynamic freeplay background color. Disable this if you prefer original V-slice freeplay menu colors',
+			'Enables dynamic freeplay background colors. Disable this if you prefer the original V-Slice freeplay menu colors.',
 			'vsliceFreeplayColors',
 			BOOL);
 		addOption(option);
@@ -32,36 +32,36 @@ class BaseGameSubState extends BaseOptionsMenu {
 		logOption = option;
 		#end
 		var option:Option = new Option('Naughtyness',
-			'If disabled, some "raunchy content" (such as swearing, etc.) will be disabled',
+			'If disabled, some "raunchy content" (such as swearing, etc.) will be disabled.',
 			'vsliceNaughtyness',
 			BOOL);
 		addOption(option);
 		var option:Option = new Option('Use Results Screen',
-			'If disabled will skip showing the result screen',
+			'If disabled, the game will skip showing the result screen.',
 			'vsliceResults',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Smooth Song Position',
-			'If enabled, it reduces the stuttering whole gameplay,\nin exchange for maybe cause problems with scripts.',
+			'If enabled, it reduces stuttering in gameplay,\nin exchange for possibly causing problems with scripts.',
 			'vsliceSongPosition',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Smooth Health Bar',
-			'If enabled, makes health bar move move smoothly.',
+			'If enabled, the health bar will move smoothly.',
 			'vsliceSmoothBar',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Use legacy bar',
-			'Makes health bar and score text much simpler',
+			'Makes the health bar and score text much simpler.',
 			'vsliceLegacyBar',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Use P-Slice cursor',
-			'',
+			'If enabled, the game will use the designated cursor for P-Slice instead of the one for V-Slice.',
 			'vsliceSystemCursor',
 			BOOL);
 		option.onChange = changeCursor;
@@ -69,7 +69,7 @@ class BaseGameSubState extends BaseOptionsMenu {
 		addOption(option);
 
 		var option:Option = new Option('- Smoothness Speed',
-			'Change the speed of the Health Bar smoothness.\n0 = Disabled, 1 = No Smoothness.',
+			'Change the speed of the Health Bar smoothness.\n0 = Disabled.',
 			'vsliceSmoothNess',
 			PERCENT);
 		option.scrollSpeed = 1.6;
@@ -86,13 +86,13 @@ class BaseGameSubState extends BaseOptionsMenu {
 		addOption(option);
 
 		var option:Option = new Option('Preview Whole Song in New Freeplay',
-			'If enabled, it will load every song in New Freeplay State,\nVery CPU Intensive.',
+			'If enabled, it will load the ENTIRE instrumental of every song in the new Freeplay State.\nVery CPU Intensive.',
 			'vsliceLoadInstAll',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Botplay Text Location: ',
-			'Change the Botplay Text Location.',
+			'Changes the location of the Botplay text.',
 			'vsliceBotPlayPlace',
 			STRING,
 			[
@@ -102,7 +102,7 @@ class BaseGameSubState extends BaseOptionsMenu {
 		addOption(option);
 		
 		var option:Option = new Option('Force "New" tag',
-			'If enabled will force every uncompleted song to show "new" tag even if it\'s disabled',
+			'If enabled, it will force every uncompleted song to show a "new" tag even if it\'s disabled',
 			'vsliceForceNewTag',
 			BOOL);
 		addOption(option);

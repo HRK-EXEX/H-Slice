@@ -211,7 +211,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			if (ClientPrefs.data.storageType != MobileOptionsSubState.lastStorageType)
 			{
 				MobileOptionsSubState.onStorageChange();
-				CoolUtil.showPopUp('Storage Type has been changed and you needed restart the game!!\nPress OK to close the game.', 'Notice!');
+				CoolUtil.showPopUp('The storage type has been changed and you need to restart the game!\nPress OK to close the game.', 'Notice!');
 				ClientPrefs.saveSettings();
 				lime.system.System.exit(0);
 			}

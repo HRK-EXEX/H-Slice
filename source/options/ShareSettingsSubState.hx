@@ -25,7 +25,7 @@ class ShareSettingsSubState extends BaseOptionsMenu {
         // I chose the word "Settings" from among of [Configuration, Settings, Preferences, Options].
         // Thank you for answering the youtube survey!
         var option:Option = new Option('Export Settings',
-			"Press ACCEPT Key to export settings.\nIt gonna be saved the json format."
+			"Press ACCEPT Key to export settings.\nIt will be saved in JSON format."
             #if mobile + "\nThis device only supports using the clipboard." #end,
 			'doExport',
 			BOOL);
@@ -34,7 +34,7 @@ class ShareSettingsSubState extends BaseOptionsMenu {
 		addOption(option);
 
         var option:Option = new Option('Import Settings',
-			"Press ACCEPT Key to import settings.\nWARNING! It overwrites your current settings if the loading has completed."
+			"Press ACCEPT Key to import settings.\nWARNING! It overwrites your current settings if the loading is completed."
             #if mobile + "\nThis device only supports using the clipboard." #end,
 			'doImport',
 			BOOL);
@@ -43,14 +43,14 @@ class ShareSettingsSubState extends BaseOptionsMenu {
 		addOption(option);
         
         var option:Option = new Option('Formatted JSON',
-			"If checked, it can editing and viewing easier.",
+			"If checked, you can more easily view and edit the exported JSON.",
 			'formatJS',
 			BOOL);
 		addOption(option);
         
         #if !mobile
         var option:Option = new Option('Use Clipboard Instead File',
-			"If checked, it copies the json data into clipboard instead exporting json file.",
+			"If checked, it copies the json data into your clipboard instead of a json file.",
 			'clipboard',
 			BOOL);
 		addOption(option);

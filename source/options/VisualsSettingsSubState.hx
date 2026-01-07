@@ -111,7 +111,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		option.onChange = playNoteSplashes;
 
 		var option:Option = new Option('Note Splash Count:',
-			'How many Note Splashes should spawn every note hit?\n0 = No Limit.',
+			'How many Note Splashes should each strum be allowed to have?\n0 = No Limit.',
 			'splashCount',
 			INT);
 		option.scrollSpeed = 30;
@@ -148,13 +148,13 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Opponent Note Splash',
-			'If checked, Note Splash appears in Opponent Strum.',
+			'If checked, opponent note hits will trigger Note Splashes.',
 			'splashOpponent',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Strum Animation',
-			'If checked, the light-up animation of the strums will play every time a note is hit.',
+			'If checked, the lit-up animation of the strums will play every time a note is hit.',
 			'strumAnim',
 			BOOL);
 		addOption(option);
@@ -172,7 +172,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Three Digits Delimiter',
-			'If checked, it will improves the visibility of large numbers, such as 1000 or more.',
+			'If checked, it improves the visibility of large numbers, like 1000 or more.',
 			'numberFormat',
 			BOOL);
 		addOption(option);
@@ -254,7 +254,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 			
 		var option:Option = new Option('Icon Strength on HP',
-			'If checked, Icon bopping depends current HP.',
+			'If checked, Icon bopping depends on your current HP.',
 			'iconStrength',
 			BOOL);
 		addOption(option);
@@ -267,7 +267,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		option.onChange = onChangeFPSCounter;
 		
 		var option:Option = new Option('- Memory Usage',
-			'If checked, shows Memory Usage, From Left to Right,\nOverall usage, Garbage Collector Usage, Maximum usage.',
+			'If checked, shows Memory Usage, From Left to Right:\nOverall usage, Garbage Collector Usage, Maximum usage.',
 			'showMemory',
 			BOOL);
 		addOption(option);
@@ -318,7 +318,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		#end
 
 		var option:Option = new Option('Time Text Precisions',
-			"You can set the decimal places to be displayed.\nMin to Second, Max to Microsecond.",
+			"Adds additional decimal values to the Time Text.\nMin is Seconds, Max is Microseconds.",
 			'timePrec',
 			INT);
 		option.defaultValue = 1;
@@ -330,19 +330,19 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
         var option:Option = new Option('Show Rating Pop-Up',
-			"If checked, \"Rating Pop-Up\" shows up every time you hit notes.\nUnchecking reduces a little bit of memory usage.",
+			"If checked, the \"Rating Pop-Up\" will display every time you hit notes.\nUnchecking reduces RAM usage by a bit.",
 			'showRating',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Show Combo Number Pop-Up',
-			"If checked, \"Combo Number Pop-Up\" shows up every time you hit notes.\nUnchecking reduces a little bit of memory usage.",
+			"If checked, the  \"Combo Number Pop-Up\" will display every time you hit notes.\nt notes.\nUnchecking reduces RAM usage by a bit.",
 			'showComboNum',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Show Combo Pop-Up',
-			"If checked, \"Combo Pop-Up\" shows up every time you hit notes.\n(I don't think anyone checks this option)",
+			"If checked, the \"Combo Pop-Up\" will display every time you hit notes.\n(I don't think anyone uses this..)",
 			'showCombo',
 			BOOL);
 		addOption(option);
@@ -354,7 +354,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Combo <-> Notes',
-			"If checked, the score pop-up become a note counter instead combo.\nIt counts both opponent and player note hits.",
+			"If checked, the combo number will become a note counter instead.\nIt counts both opponent and player note hits.",
 			'changeNotes',
 			BOOL);
 		addOption(option);

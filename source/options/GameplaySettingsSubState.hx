@@ -21,7 +21,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 
 		//I'd suggest using "Downscroll" as an example for making your own option since it is the simplest here
 		var option:Option = new Option('Downscroll', //Name
-			'If checked, notes go Down instead of Up, simple enough.', //Description
+			'If checked, notes will go Down instead of Up, simple enough.', //Description
 			'downScroll', //Save data variable name
 			BOOL); //Variable type
 		addOption(option);
@@ -39,19 +39,19 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Over Health',
-			'If checked, health goes beyond 100%,\nbut it returns to 100% immedietaly after 1 frame.',
+			'If checked, the health can go beyond 100%,\nbut it\'ll return to 100% immediately.',
 			'overHealth',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Health Drain',
-			'If checked, opponent drains your health when they hit a note.\n(Conflicts with other health drain scripts)',
+			'If checked, the opponent can drain your health when they hit a note.\n(Conflicts with other health drain scripts!)',
 			'healthDrain',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('- Accuracy',
-			"Calculates the health correctly depends on count of both players hit.\nSet to 0 If u don't allow slight difference.",
+			"Calculates the health correctly depending on how many notes both players hit.\nSet to 0 if you don't want a slight difference.",
 			'drainAccuracy',
 			INT);
 		option.scrollSpeed = 100;
@@ -86,13 +86,13 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Remove Overlapped Notes',
-			"If checked, the game will remove notes which are hidden behind the others.\nRange is controlled by the option below.",
+			"If checked, the game will remove notes which are hidden behind the others.\nThe range is controlled by the option below.",
 			'skipGhostNotes',
 			BOOL);
 		addOption(option);
 
 		var option:Option = new Option(' - Threshold:',
-			"Threshold of the option above.\nYou can set it in millisecond.",
+			"Threshold of the option above.\nYou can set it in milliseconds.",
 			'ghostRange',
 			FLOAT);
 		option.displayFormat = '%v ms';
@@ -127,7 +127,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Accurate Song Position',
-			"If checked, songPosition supports microSeconds.\nBut It doesn't support for very old CPUs.",
+			"If checked, songPosition supports microSeconds.\nThis won't work on very old CPUs.",
 			'nanoPosition',
 			BOOL);
 		option.onChange = onChangeCounterMethod;
@@ -135,7 +135,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Song Resync Threshold',
-			"Smaller value improves the sync accuracy, but It makes pop noises.\nLarger value reduces pop noises, but It'll desync little by little.\nDefault values are 20 for desktop and 50 for mobile.",
+			"Smaller values improve the sync accuracy, but It makes pop noises.\nLarger values reduce those noises, but the song may desync more and more.",
 			'syncThreshold',
 			INT);
 		option.displayFormat = '%v ms';
@@ -154,7 +154,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('- Occurrence Rate',
-			"It's not from my old engine, a new thing.",
+			"Adjusts the chance of your Botplay text being a random one.\n(0% = No Chance, 100% = Guaranteed)",
 			'randomChance',
 			PERCENT);
 		option.scrollSpeed = 1;
@@ -165,7 +165,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('BGM/Music Volume',
-			"I wonder why doesn't this option exists in official build? xd",
+			"I wonder why this option doesn't exist in official build? xd",
 			'bgmVolume',
 			PERCENT);
 		option.scrollSpeed = 1;
@@ -178,7 +178,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('SE/SFX Volume',
-			"I wonder why doesn't this option exists in official build? xd",
+			"I wonder why this option doesn't exist in official build? xd",
 			'sfxVolume',
 			PERCENT);
 		option.scrollSpeed = 1;

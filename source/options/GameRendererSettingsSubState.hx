@@ -74,14 +74,14 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		// addOption(option);
 
         var option:Option = new Option('Use Game Renderer',
-			"If checked, It renders a video.\nAnd It forces turn on Botplay and disable debug menu key.",
+			"If checked, the game will render videos.\nThis forces turn on Botplay and disables the debug menu keys.",
 			'ffmpegMode',
 			BOOL);
 		option.onChange = resetTimeScale;
 		addOption(option);
 
         var option:Option = new Option('Garbage Collection Rate',
-			"Have GC run automatically based on this option.\nSpecified by Frame and It turn on GC forcely.\n0 means disabled. Beware of memory leaks!",
+			"Have GC run automatically based on this option.\nThis is specified by frame count and it forces on GC.\n0 means disabled. Beware of memory leaks!",
 			'gcRate',
 			INT);
 		addOption(option);
@@ -94,13 +94,13 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		gcRateOption = option;
 
 		var option:Option = new Option('Run Major Garbage Collection',
-			"Increase the GC range and reduce memory usage.\nIt's for upper option.",
+			"Increase the GC range and reduce memory usage.\nIt's for the previous option.",
 			'gcMain',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Video Framerate',
-			"How much do you need fps in your video?",
+			"What framerate should your videos render at?",
 			'targetFPS',
 			INT);
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
@@ -115,14 +115,14 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Video Codec',
-			"It's advanced Option. If you don't know, leave this 'H.264'.",
+			"Change the video codec here. They all have differences like speed, quality, etc.\nIf you don't know what to choose, leave this on 'H.264'.",
 			'codec',
 			STRING,
 			codecList);
 		addOption(option);
 
 		var option:Option = new Option('Encode Mode',
-			"It's advanced Option.\nSelect the mode of rendering you want.",
+			"It's advanced Option.\nSelect the encoding mode you want.",
 			'encodeMode',
 			STRING,
 			['CRF/CQP', 'VBR', 'CBR']);
@@ -130,7 +130,7 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Video Bitrate',
-			"Set bitrate in here.",
+			"Set your video bitrate in here.",
 			'bitrate',
 			FLOAT);
 		option.minValue = 0.01;
@@ -145,7 +145,7 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Video Quality',
-			"The quality which set here is constant.",
+			"The quality set here is a constant.",
 			'constantQuality',
 			FLOAT);
 		addOption(option);
@@ -158,25 +158,25 @@ class GameRendererSettingsSubState extends BaseOptionsMenu
 		bitOption = option;
 
         var option:Option = new Option('Unlock Framerate',
-			"If checked, fps limit goes 1000 in rendering.",
+			"If checked, the framerate will be uncapped while rendering a song.\nThis does not affect the video framerate!",
 			'unlockFPS',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Pre Rendering',
-			"If checked, Render current screen in the first of update method.\nIf unchecked, It does in the last of it.",
+				"If checked, frames will render at the start of the update method.\nIf unchecked, It does after processing everything.",
 			'preshot',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Preview Mode',
-			"If checked, Skip rendering.\nIf ffmpeg not found, force enabling this.\nIt's for a function for debug too.",
+			"If checked, the game will skip redering.\nIf ffmpeg is not found, this is forced on.\nIt's for a function for debug too.",
 			'previewRender',
 			BOOL);
 		addOption(option);
 
         var option:Option = new Option('Test Rendering Each Encoders',
-			"Try to test which is encoder available!",
+			"Test every encoder to see which ones your GPU is compatible with!",
 			'dummy',
 			BOOL);
 		option.onChange = testRender;

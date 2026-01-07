@@ -2040,7 +2040,7 @@ class PlayState extends MusicBeatState
 				if (ghostNotesCaught > 0)
 					Eseq.pln('Overlapped Notes Cleared: $ghostNotesCaught');
 				else {
-					Eseq.pln('WOW! There is no overlapped notes. Great charting!');
+					Eseq.pln('WOW! There are no overlapped notes. Great charting!');
 				}
 			}
 		
@@ -2053,7 +2053,7 @@ class PlayState extends MusicBeatState
 			Eseq.pln('Sorting Notes...');
 			ArraySort.sort(unspawnNotes, sortByTime);
 		} else {
-			trace("Unspawned Notes are omitted since they are already in the memory!");
+			trace("Chart loading has been skipped since unspawnNotes is already in the memory!");
 		}
 
 		// IT'S FOR INSIDE EVENTS ON CHART JSON
@@ -3662,7 +3662,7 @@ class PlayState extends MusicBeatState
 		if (ffmpegMode && !previewRender) {
 			if (cancelCount < 3) {
 				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.sfxVolume).pitch = cancelCount * 0.2 + 1;
-				Eseq.pln(3 - cancelCount + " left to escape the rendering.");
+				Eseq.pln(3 - cancelCount + " presses left to escape the rendering.");
 				++cancelCount;
 			} else {
 				FlxG.fixedTimestep = false;

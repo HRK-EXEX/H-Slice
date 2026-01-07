@@ -3066,7 +3066,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	inline function findSkipBoundary(start:Int, fp:Float, kill:Float):Int {
+	inline function findSkipBoundary(start:Int, fp:Float):Int {
 		var lo = start;
 		var hi = unspawnNotes.length;
 
@@ -3084,10 +3084,10 @@ class PlayState extends MusicBeatState
 	}
 
 	inline function fastSkipRegularNotes(fp:Float):Bool {
-		if (!optimizeSpawnNote || !skipSpawnNote)
+		if (!optimizeSpawnNote && !skipSpawnNote)
 			return false;
 
-		var end = findSkipBoundary(totalCnt, fp, noteKillOffset);
+		var end = findSkipBoundary(totalCnt, fp);
 
 		if (end > totalCnt) {
 			applySkipRange(totalCnt, end);

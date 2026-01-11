@@ -117,9 +117,9 @@ class SustainSplash extends FlxSprite
 		if (animation != null && note != null && note.strum != null)
 		{
 			alpha = ClientPrefs.data.holdSplashAlpha - (1 - note?.strum?.alpha);
-			animation.play('end${noShader ? Std.string(note?.noteData) : ''}', true, false, 0);
-			animation.curAnim.looped = false;
-			animation.curAnim.frameRate = rnd.int(22, 26);
+			animation.play('end${noShader ? Std.string(note?.noteData ?? 0) : ''}', true, false, 0);
+			animation.curAnim?.looped = false;
+			animation.curAnim?.frameRate = rnd.int(22, 26);
 			clipRect = null;
 			animation.finishCallback = idkEither -> kill();
 			return;

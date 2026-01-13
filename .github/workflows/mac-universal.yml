@@ -25,6 +25,8 @@ jobs:
   build:
     name: Build
     runs-on: macos-15
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@main

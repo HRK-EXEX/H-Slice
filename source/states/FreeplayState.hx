@@ -2,7 +2,6 @@ package states;
 
 import hrk.Eseq;
 import haxe.Timer;
-import sys.thread.Thread;
 import backend.WeekData;
 import backend.Highscore;
 import backend.Song;
@@ -15,8 +14,6 @@ import substates.ResetScoreSubState;
 
 import flixel.math.FlxMath;
 import flixel.util.FlxDestroyUtil;
-
-import openfl.utils.Assets;
 
 import haxe.Json;
 
@@ -136,8 +133,12 @@ class FreeplayState extends MusicBeatState
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		add(bg);
+		
+		if (FlxG.width >= bg.width) bg.setGraphicSize(Std.int(FlxG.width / bg.width));
+		if (FlxG.height >= bg.height) bg.setGraphicSize(Std.int(FlxG.height / bg.height));
+		
 		bg.screenCenter();
+		add(bg);
 		
 		grpSongs = new FlxTypedGroup<Alphabet>(); add(grpSongs);
 		iconGroup = new FlxTypedGroup<HealthIcon>(); add(iconGroup);
@@ -219,7 +220,7 @@ class FreeplayState extends MusicBeatState
 		}
 		
 		#if TOUCH_CONTROLS_ALLOWED
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
+		addTouchPad('LEFT_FULL', 'A_B_X_Y_P');
 		#end
 	}
 
@@ -231,7 +232,7 @@ class FreeplayState extends MusicBeatState
 		
 		#if TOUCH_CONTROLS_ALLOWED
 		removeTouchPad();
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
+		addTouchPad('LEFT_FULL', 'A_B_X_Y_P');
 		#end
 	}
 
@@ -317,7 +318,7 @@ class FreeplayState extends MusicBeatState
 				loadingText.screenCenter();
 
 				stampTime = Timer.stamp();
-				
+
 				if (loading >= songs.length) {
 					Eseq.pln('\nLoading Done');
 					WeekData.setDirectoryFromWeek();
@@ -441,7 +442,7 @@ class FreeplayState extends MusicBeatState
 			persistentUpdate = false;
 			openSubState(new GameplayChangersSubstate());
 		}
-		else if(FlxG.keys.justPressed.SPACE)
+		else if(FlxG.keys.justPressed.SPACE #if TOUCH_CONTROLS_ALLOWED || touchPad?.buttonP.justPressed #end)
 		{
 			if(instPlaying != curSelected && !player.playingMusic)
 			{

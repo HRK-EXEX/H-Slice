@@ -2,7 +2,7 @@ name: Build the game
 
 on:
   pull_request:
-    branches: [master, developmentalist]
+    branches: [master]
   push:
     branches: [developmentalist]
   workflow_dispatch:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Linux
+          - name: Desktop
             os: ubuntu-latest
             setupScript: sh ./setup/unix.sh
             CACHE_NAME: H-Slice.desktop-cache
@@ -34,7 +34,7 @@ jobs:
     uses: ./.github/workflows/mac-universal.yml
     with:
       exportPath: macos
-      artifactName: H-Slice.0.2.3.macos
+      artifactName: H-Slice_0.2.3_macos
       artifactPath: export/release/macos/bin/*
       cachePath: H-Slice.build-macos
       cacheLibrariesPath: H-Slice.mobile-cache
@@ -49,7 +49,7 @@ jobs:
             os: windows-2022
             buildArgs: windows
             exportPath: windows
-            artifactName: H-Slice.0.2.3.windows
+            artifactName: H-Slice_0.2.3_windows
             artifactPath: export\release\windows\bin\*
             cachePath: H-Slice.build-windows
             cacheLibrariesPath: H-Slice.desktop-cache
@@ -57,7 +57,7 @@ jobs:
             os: ubuntu-22.04
             buildArgs: linux
             exportPath: linux
-            artifactName: H-Slice.0.2.3.linux
+            artifactName: H-Slice_0.2.3_linux
             artifactPath: export/release/linux/bin/*
             cachePath: H-Slice.build-linux
             cacheLibrariesPath: H-Slice.desktop-cache
@@ -84,7 +84,7 @@ jobs:
             os: macos-15
             buildArgs: "android"
             exportPath: android
-            artifactName: H-Slice.0.2.3.android
+            artifactName: H-Slice_0.2.3_android
             artifactPath: "export/release/android/bin/app/build/outputs/apk/release/*.apk"
             cachePath: H-Slice.build-android
             cacheLibrariesPath: H-Slice.mobile-cache
@@ -92,7 +92,7 @@ jobs:
             os: macos-15
             buildArgs: "ios -nosign"
             exportPath: ios
-            artifactName: H-Slice.0.2.3.ios
+            artifactName: H-Slice_0.2.3_ios
             artifactPath: "export/release/ios/build/Release-iphoneos/*.ipa"
             cachePath: H-Slice.build-ios
             cacheLibrariesPath: H-Slice.mobile-cache

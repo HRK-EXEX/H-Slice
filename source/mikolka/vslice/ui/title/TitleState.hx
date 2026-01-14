@@ -128,11 +128,12 @@ class TitleState extends MusicBeatState
 		var animFrames:Array<FlxFrame> = [];
 		titleText = new FlxSprite(enterPosition.x+cutout_size, enterPosition.y);
 		titleText.frames = Paths.getSparrowAtlas('titleEnter');
-		@:privateAccess
+		@:privateAccess try
 		{
 			titleText.animation.findByPrefix(animFrames, "ENTER IDLE");
 			titleText.animation.findByPrefix(animFrames, "ENTER FREEZE");
 		}
+		catch(e) { Eseq.p('[WARN] The game failed to find the animations for the title screen text...');}
 
 		if (newTitle = animFrames.length > 0)
 		{
@@ -630,14 +631,14 @@ class TitleState extends MusicBeatState
 	 */
 	function moveToAttract():Void
 	{
-		#if VIDEOS_ALLOWED 
-		if (!Std.isOfType(FlxG.state, TitleState))
+		if (!Std.isOfType(FlxG.state, TitleState) || FlxG.sound.music == null)
 			return;
-		#if LEGACY_PSYCH
-		FlxG.switchState(new AttractState()); 
-		#else
-		FlxG.switchState(() -> new AttractState()); 
-		#end
+		#if VIDEOS_ALLOWED
+			#if LEGACY_PSYCH
+			FlxG.switchState(new AttractState()); 
+			#else
+			FlxG.switchState(() -> new AttractState()); 
+			#end
 		#end
 	}
 }

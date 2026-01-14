@@ -31,7 +31,7 @@ class OptionsState extends MusicBeatState
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	private static var curSelectedPartial:Float = 0;
-	public static var menuBG:FlxSprite;
+	
 	public static var onPlayState:Bool = false;
 	var exiting:Bool = false;
 	#if (target.threaded) var mutex:Mutex = new Mutex(); #end

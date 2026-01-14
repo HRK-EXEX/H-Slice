@@ -34,6 +34,8 @@ jobs:
   build:
     name: Build
     runs-on: ${{ inputs.os }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@main

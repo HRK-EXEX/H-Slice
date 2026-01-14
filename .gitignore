@@ -13,6 +13,7 @@ export/*
 .vscode/*
 .haxelib/
 TEST.bat
+TEST_MOBILE.bat
 RUN.bat
 log.txt
 .DS_Store

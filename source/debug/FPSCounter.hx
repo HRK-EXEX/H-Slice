@@ -50,6 +50,10 @@ class FPSCounter extends TextField
 
 	var deltaTimeout:Float = 0.0;
 	var delta:Int = 0;
+
+	var nanoSecond:Float = 0.0;
+	var nanoDelay:Float = 0.0;
+
 	var sliceCnt:Int = 0;
 	var sum:Int = 0;
 	var avg:Float = 0;
@@ -97,6 +101,14 @@ class FPSCounter extends TextField
 	private override function __enterFrame(deltaTime:Float):Void
 	{
 		if (!ClientPrefs.data.showFPS || !visible || FlxG.autoPause && !stage.nativeWindow.active) return;
+
+		if (ClientPrefs.data.nanoPosition) {
+			nanoDelay = CoolUtil.getNanoTime() - nanoSecond;
+			nanoSecond = CoolUtil.getNanoTime();
+
+			deltaTime = nanoDelay * 1000;
+		}
+		
 		sliceCnt = 0; delta = Math.round(deltaTime);
 		times.push(delta); sum += delta; updated = false;
 		fps = ClientPrefs.data.framerate;
@@ -116,15 +128,25 @@ class FPSCounter extends TextField
 		
 		// Literally the stupidest thing i've done for the FPS counter but it allows it to update correctly when on 60 FPS??
 		currentFPS = Math.round(avg); //Math.round((times.length + cacheCount) * 0.5) - 1;
-		updateText();
+		updateText(Math.round(1000 / deltaTime));
 		deltaTimeout = 0.0;
 	}
 
 	// so people can override it in hscript
 	var fpsStr:String = "";
-	public dynamic function updateText() {
-		fpsStr = 'FPS: ${ClientPrefs.data.ffmpegMode ? ClientPrefs.data.targetFPS + " - Rendering Mode" : '$currentFPS - ${ClientPrefs.data.vsync ? "VSync" : "No VSync"}'}' +
-			   '${MemoryUtil.isGcEnabled ? '' : " - No GC"}\n';
+	
+	var realFPS:String = '';
+	var avgFPS:String = '';
+	var targetFPS:String = '';
+	public dynamic function updateText(deltaTime:Float) {
+		if (ClientPrefs.data.ffmpegMode) {
+			targetFPS = CoolUtil.fillNumber(ClientPrefs.data.targetFPS, FlxMath.minInt(4, Std.string(ClientPrefs.data.targetFPS).length+1), 32, false);
+			fpsStr = 'FPS:$targetFPS - RENDERING${MemoryUtil.isGcEnabled ? '' : " / No GC"}\n';
+		} else {
+			realFPS = CoolUtil.fillNumber(deltaTime, FlxMath.minInt(4, Std.string(deltaTime).length+1), 32, false);
+			avgFPS = CoolUtil.fillNumber(currentFPS, FlxMath.minInt(4, Std.string(currentFPS).length+1), 32, false);
+			fpsStr = 'FPS:$realFPS |$avgFPS${MemoryUtil.isGcEnabled ? '' : " / No GC"}\n';
+		}
 		
 		if (ClientPrefs.data.showMemory) {
 			fpsStr += 'RAM: ${CoolUtil.formatBytes(Memory.getCurrentUsage(), 1, true)} / ${CoolUtil.formatBytes(Gc.memInfo64(Gc.MEM_INFO_USAGE), 1, true)}';

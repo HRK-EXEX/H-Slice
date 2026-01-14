@@ -129,8 +129,9 @@ class Song
 	public static function loadFromJson(jsonInput:String, ?forPlay:Bool, ?folder:String):SwagSong
 	{
 		SongJson.skipChart = forPlay;
-		if(folder == null) folder = jsonInput;
+		folder = folder ?? jsonInput;
 		PlayState.SONG = getChart(jsonInput, folder);
+
 		loadedSongName = folder;
 		chartPath = _lastPath;
 		#if windows

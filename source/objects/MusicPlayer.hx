@@ -286,18 +286,7 @@ class MusicPlayer extends FlxGroup
 
 	function updatePlaybackTxt()
 	{
-		var text = "";
-		if (playbackRate is Int)
-			text = playbackRate + '.00';
-		else
-		{
-			var playbackRate = Std.string(playbackRate);
-			if (playbackRate.split('.')[1].length < 2) // Playback rates for like 1.1, 1.2 etc
-				playbackRate += '0';
-
-			text = playbackRate;
-		}
-		playbackTxt.text = text + 'x';
+		playbackTxt.text = 'x${CoolUtil.floatToStringPrecision(playbackRate, 2)}';
 	}
 
 	function positionSong() 

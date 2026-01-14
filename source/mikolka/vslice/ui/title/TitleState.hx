@@ -631,14 +631,14 @@ class TitleState extends MusicBeatState
 	 */
 	function moveToAttract():Void
 	{
-		#if VIDEOS_ALLOWED 
-		if (!Std.isOfType(FlxG.state, TitleState) || FlxG?.sound?.music == null)
+		if (!Std.isOfType(FlxG.state, TitleState) || FlxG.sound.music == null)
 			return;
-		#if LEGACY_PSYCH
-		FlxG.switchState(new AttractState()); 
-		#else
-		FlxG.switchState(() -> new AttractState()); 
-		#end
+		#if VIDEOS_ALLOWED
+			#if LEGACY_PSYCH
+			FlxG.switchState(new AttractState()); 
+			#else
+			FlxG.switchState(() -> new AttractState()); 
+			#end
 		#end
 	}
 }

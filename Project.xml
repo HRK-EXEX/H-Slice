@@ -4,9 +4,9 @@ xmlns="http://lime.openfl.org/project/1.0.4"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/xsd/project-1.0.4.xsd">
 	<!-- _________________________ Application Settings _________________________ -->
-	<app unless="PROFILE_BUILD || mobile" title="Friday Night Funkin': H-Slice (HRK Engine Redux)" file="H-Slice" packageName="com.hrek.hexex.hslice" package="com.hrek.hexex.hslice" main="Main" version="0.2" company="hrek-hexex" />
-	<app if="PROFILE_BUILD" title="H-Slice Engine Profiling build" file="H-Slice" packageName="com.hrek.hexex.testHslice" package="com.hrek.hexex.testHslice" main="Main" version="0.2"  company="hrek-hexex" />
-	<app if="mobile" unless="PROFILE_BUILD" title="H-Slice Engine" file="H-Slice" packageName="com.hrek.hexex.hslice" package="com.hrek.hexex.hslice" main="Main" version="0.2"  company="hrek-hexex" />
+	<app unless="PROFILE_BUILD || mobile" title="Friday Night Funkin': H-Slice + JS (HRK Engine Redux)" file="H-Slice" packageName="com.hrek.hexex.hslice" package="com.hrek.hexex.hslice" main="Main" version="0.2" company="hrek-hexex" />
+	<app if="PROFILE_BUILD" title="H-Slice + JS Engine Profiling build" file="H-Slice" packageName="com.hrek.hexex.testHslice" package="com.hrek.hexex.testHslice" main="Main" version="0.2"  company="hrek-hexex" />
+	<app if="mobile" unless="PROFILE_BUILD" title="H-Slice + JS Engine" file="H-Slice" packageName="com.hrek.hexex.hslice" package="com.hrek.hexex.hslice" main="Main" version="0.2"  company="hrek-hexex" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
@@ -27,7 +27,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
 	<!-- Compiles mod support for H-Slice. Feel free to disable if you're making a source mod -->
-	<define name="MODS_ALLOWED" />
+	<define name="MODS_ALLOWED" if="desktop || mobile" />
 
 	<section unless="debug">
 		<!-- Adds the ability to use OpenFL asset lookup (defaults to sys if disabled)  -->
@@ -224,7 +224,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<section if="debug">
 		<!-- These defines are mostly for testing (aren't required to be used) -->
 		<haxelib name="hxcpp-debug-server" />
-		<haxelib name="flixel-studio" />
+		<!-- <haxelib name="flixel-studio" /> -->
 		<haxelib name="hscript"/>
 	</section>
 	
@@ -315,7 +315,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
 
 	<!-- what is this -->
-	<!-- <define name="DISABLE_CHART_EDITOR" /> -->
+	<define name="DISABLE_CHART_EDITOR" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 

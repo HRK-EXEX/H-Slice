@@ -488,7 +488,8 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;
 					FlxG.camera.followLerp = 0;
-					PlayState.unspawnNotes = [];
+					PlayState.unspawnNotes.resize(0);
+					PlayState.loaded = false;
 				default:
 					if (selectedOption == cutscene_skipTxt)
 					{

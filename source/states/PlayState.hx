@@ -488,7 +488,7 @@ class PlayState extends MusicBeatState
 	];
 
 	public static var canResync:Bool = false;
-	public static var loaded(default, null):Bool = false;
+	public static var loaded:Bool = false;
 
 	override public function create()
 	{
@@ -1887,6 +1887,7 @@ class PlayState extends MusicBeatState
 			var sectionsData:Array<SwagSection> = SONG.notes;
 			var daBpm:Float = Conductor.bpm;
 
+			var secCnt:Int = 0;
 			var cnt:Int = 0;
 			var notes:Int = 0;
 
@@ -1931,16 +1932,15 @@ class PlayState extends MusicBeatState
 				if (Timer.stamp() - syncTime > updateElapse || force)
 				{
 					if (numberDelimit) 
-						Eseq.p('Loading ${formatD(cnt)}/${formatD(sectionsData.length)} (${formatD(notes + sectionNoteCnt)}/$totalNoteCnt notes)');
+						Eseq.p('Loading ${formatD(secCnt)}/${formatD(sectionsData.length)} (${formatD(notes + sectionNoteCnt)}/${formatD(totalNoteCnt)} notes)');
 					else
-						Eseq.p('Loading $cnt/${sectionsData.length} (${notes + sectionNoteCnt}/$totalNoteCnt notes)');
+						Eseq.p('Loading $secCnt/${sectionsData.length} (${notes + sectionNoteCnt}/$totalNoteCnt notes)');
 					syncTime = Timer.stamp();
 				}
 			}
 
 			for (section in sectionsData)
 			{
-				++cnt;
 				sectionNoteCnt = 0;
 				shownProgress = false;
 				if (section.changeBPM != null && section.changeBPM && section.bpm != null && daBpm != section.bpm)
@@ -2026,11 +2026,11 @@ class PlayState extends MusicBeatState
 						noteTypes.push(swagNote.noteType);
 
 					showProgress();
-					++sectionNoteCnt;
+					++sectionNoteCnt; ++cnt;
 				}
-
-				showProgress();
 				notes += sectionNoteCnt;
+				++secCnt;
+				showProgress();
 			}
 
 			showProgress(true);

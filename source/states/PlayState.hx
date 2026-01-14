@@ -3098,11 +3098,11 @@ class PlayState extends MusicBeatState
 		if (!optimizeSpawnNote && !skipSpawnNote)
 			return false;
 
-		var end = findSkipBoundary(totalCnt, fp);
+		var end = findSkipBoundary(currentId, fp);
 
-		if (end > totalCnt) {
-			applySkipRange(totalCnt, end);
-			totalCnt = end;
+		if (end > currentId) {
+			applySkipRange(currentId, end);
+			currentId = end;
 			return true;
 		}
 
@@ -3273,7 +3273,7 @@ class PlayState extends MusicBeatState
 
 		if (spawnNoteEvent) {
 			callOnLuas('onSpawnNote', [
-				totalCnt,
+				currentId,
 				dunceNote.noteData,
 				dunceNote.noteType,
 				dunceNote.isSustainNote,
@@ -3491,7 +3491,7 @@ class PlayState extends MusicBeatState
 						skipArray = [0, Std.int(Math.abs(daNote.noteData)), daNote.noteType, daNote.isSustainNote];
 
 						var targetStr = index == 0 ? 'opponent' : 'good';
-						for (i in 0...skippedAmount) {
+						for (i in 0...Std.int(skippedAmount)) {
 							if (noteHitPreEvent) scriptCall(targetStr + 'NoteHitPre', [daNote]);
 							if (noteHitEvent) scriptCall(targetStr + 'NoteHit', [daNote]);
 						}

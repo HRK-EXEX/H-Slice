@@ -19,6 +19,8 @@ jobs:
   build:
     name: Build
     runs-on: ${{ inputs.os }}
+    permissions:
+      pull-requests: write
     steps:
       - name: Restore Libraries for compilation
         id: load-lib-cache

@@ -25,6 +25,8 @@ jobs:
   build:
     name: Build
     runs-on: macos-15
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@main
@@ -69,7 +71,7 @@ jobs:
 
       - name: Compile (x86_64)
         run: |
-          haxelib run lime build mac -64  -D HXCPP_M64 
+          haxelib run lime build mac -64 -D HXCPP_M64 
           mv ./export/release/macos/bin/H-Slice.app/Contents/MacOS/H-Slice ./pslice-x86
           mv ./export/release/macos/bin/H-Slice.app/Contents/MacOS/lime.ndll ./lime-x86.ndll
       - name: Reflux because yes

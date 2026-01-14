@@ -488,6 +488,7 @@ class PlayState extends MusicBeatState
 	];
 
 	public static var canResync:Bool = false;
+	public static var loaded(default, null):Bool = false;
 
 	override public function create()
 	{
@@ -1011,8 +1012,8 @@ class PlayState extends MusicBeatState
 					middle = Std.int((left + right) / 2);
 				}
 			};
-			totalCnt = middle;
-			trace('next index is $totalCnt');
+			currentId = middle;
+			trace('next index is $currentId');
 		}
 
 		#if desktop
@@ -1882,17 +1883,17 @@ class PlayState extends MusicBeatState
 
 		Note.chartArrowSkin = SONG.arrowSkin;
 
-		if (unspawnNotes.length == 0) {
+		if (!loaded) {
 			var sectionsData:Array<SwagSection> = SONG.notes;
 			var daBpm:Float = Conductor.bpm;
 
-			var cnt:Float = 0;
-			var notes:Float = 0;
+			var cnt:Int = 0;
+			var notes:Int = 0;
 
-			var sectionNoteCnt:Float = 0;
+			var sectionNoteCnt:Int = 0;
 			var shownProgress:Bool = false;
-			var sustainNoteCnt:Float = 0;
-			var sustainTotalCnt:Float = 0;
+			var sustainNoteCnt:Int = 0;
+			var sustainTotalCnt:Int = 0;
 
 			var songNotes:Array<Dynamic> = [];
 			var strumTime:Float;
@@ -1917,13 +1918,22 @@ class PlayState extends MusicBeatState
 
 			var loadNoteTime:Float = CoolUtil.getNanoTime();
 
+			Eseq.pln("Allocating castNote array");
+			var totalNoteCnt:Int = 0;
+			
+			for (section in sectionsData)
+			{
+				totalNoteCnt += section.sectionNotes.length;
+			}
+			unspawnNotes.resize(totalNoteCnt);
+
 			function showProgress(force:Bool = false) {
 				if (Timer.stamp() - syncTime > updateElapse || force)
 				{
 					if (numberDelimit) 
-						Eseq.p('Loading ${formatD(cnt)}/${formatD(sectionsData.length)} (${formatD(notes + sectionNoteCnt)} notes)');
+						Eseq.p('Loading ${formatD(cnt)}/${formatD(sectionsData.length)} (${formatD(notes + sectionNoteCnt)}/$totalNoteCnt notes)');
 					else
-						Eseq.p('Loading $cnt/${sectionsData.length} (${notes + sectionNoteCnt} notes)');
+						Eseq.p('Loading $cnt/${sectionsData.length} (${notes + sectionNoteCnt}/$totalNoteCnt notes)');
 					syncTime = Timer.stamp();
 				}
 			}
@@ -1982,7 +1992,7 @@ class PlayState extends MusicBeatState
 					swagNote.noteData |= (section.altAnim || (songNotes[3] == 'Alt Animation' || songNotes[3] == 1)) ? 1<<12 : 0; // altAnim
 					swagNote.noteData |= (songNotes[3] == 'No Animation' || songNotes[3] == 5) ? 1<<13 : 0; // noAnimation & noMissAnimaiton
 					
-					unspawnNotes.push(swagNote);
+					unspawnNotes[cnt] = swagNote;
 
 					if (songNotes[2] > 0.0)
 					{
@@ -2061,7 +2071,7 @@ class PlayState extends MusicBeatState
 			for (i in 0...event[1].length)
 				makeEvent(event, i);
 
-		generatedMusic = true;
+		generatedMusic = loaded = true;
 		Eseq.pln('Ready to PLAY!');
 	}
 
@@ -2354,10 +2364,11 @@ class PlayState extends MusicBeatState
 	var prevDecBeat:Float = 0;
 
 	// Spawning
-	var totalCnt:Int = 0;
+	var currentId:Int = 0;
 	var targetNote:CastNote = null;
 	var dunceNote:Note = null;
 	var strumGroup:FlxTypedGroup<StrumNote>;
+	final skipBuffer:Int = 1024;
 
 	// Popup
 	var popUpHitNote:Note = null;
@@ -3172,9 +3183,9 @@ class PlayState extends MusicBeatState
 
 		fastSkipRegularNotes(fixedPosition);
 
-		if (unspawnNotes.length > totalCnt)
+		if (unspawnNotes.length > currentId)
 		{
-			targetNote = unspawnNotes[totalCnt];
+			targetNote = unspawnNotes[currentId];
 			initSpawnInfo(targetNote);
 			isDisplay = targetNote.strumTime - fixedPosition < shownTime;
 
@@ -3214,7 +3225,7 @@ class PlayState extends MusicBeatState
 					}
 				}
 				
-				if (unspawnNotes.length > ++totalCnt) targetNote = unspawnNotes[totalCnt]; else break;
+				if (unspawnNotes.length > ++currentId) targetNote = unspawnNotes[currentId]; else break;
 
 				initSpawnInfo(targetNote);
 				isDisplay = targetNote.strumTime - fixedPosition < shownTime;
@@ -3480,7 +3491,7 @@ class PlayState extends MusicBeatState
 						skipArray = [0, Std.int(Math.abs(daNote.noteData)), daNote.noteType, daNote.isSustainNote];
 
 						var targetStr = index == 0 ? 'opponent' : 'good';
-						for (i in 0...Std.int(skippedAmount)) {
+						for (i in 0...skippedAmount) {
 							if (noteHitPreEvent) scriptCall(targetStr + 'NoteHitPre', [daNote]);
 							if (noteHitEvent) scriptCall(targetStr + 'NoteHit', [daNote]);
 						}
@@ -4466,7 +4477,8 @@ class PlayState extends MusicBeatState
 			transitioning = true;
 		}
 		
-		unspawnNotes = [];
+		unspawnNotes.resize(0);
+		loaded = false;
 		return true;
 	}
 

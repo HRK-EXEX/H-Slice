@@ -2047,8 +2047,10 @@ class PlayState extends MusicBeatState
 			);
 
 			if (skipGhostNotes) {
-				if (ghostNotesCaught > 0)
+				if (ghostNotesCaught > 0) {
 					Eseq.pln('Overlapped Notes Cleared: $ghostNotesCaught');
+					unspawnNotes.resize(notes);
+				}
 				else {
 					Eseq.pln('WOW! There are no overlapped notes. Great charting!');
 				}

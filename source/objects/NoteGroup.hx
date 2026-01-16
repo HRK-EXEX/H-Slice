@@ -68,4 +68,22 @@ class NoteGroup extends FlxTypedGroup<Note>
         living = countLiving();
         return [living, length, living * 100.0 / Math.max(length, 1), length];
     }
+
+    override public function countLiving():Int
+	{
+		var count:Int = -1;
+
+		for (basic in members)
+		{
+			if (basic != null)
+			{
+				if (count < 0)
+					count = 0;
+				if (basic.exists && basic.alive)
+					count += Std.int(basic.density) ?? 1;
+			}
+		}
+
+		return count;
+	}
 }
